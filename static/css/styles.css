@@ -1,0 +1,76 @@
+canvas { margin: -35px 0 10px; float: right; clear: right; }
+.dialog p, label span, span, th, td, #form label { color: #555; font: normal 0.8em sans-serif; }
+h3 { font: bold italic 1em sans-serif; margin: 15px 0 5px;  }
+table { width: 100% }
+td { text-align: left; background: #ffffff;padding:4px 3px 2px; text-align: right; border: 1px solid #CCC;}
+th { text-align: right; padding: 4px 3px 2px; }
+
+.clickable { cursor: pointer; color: #FF0055; text-decoration: underline; }
+.sep { margin: 0 10px; border-right: 1px solid #ccc; line-height: 25px; }
+
+#container { width: 450px; margin: 0 auto; }
+#salogo a img { border: none; margin: 20px; } 
+#calc { background: #fafafa; padding: 5px 20px 10px; width: 410px; clear: left; }
+
+#info { background: #FFB; padding: 5px 10px 2px; vertical-align: middle; font-size: 0.8em; }
+#settings { background: #eee; padding: 0px 10px; border-bottom: 1px solid #DDD; margin-top: 10px; }
+#settings label { color: #666; }
+#settings .flag { vertical-align: middle ; }
+
+#form { float: left; height: 110px; width: 180px; }
+#form label { display: block; float: left; clear: left; height: 20px; padding-top: 3px; }
+#form input, #form select { float: right; }
+
+#results td, #results tr { white-space: nowrap }
+#results td { font-weight: bold; color: #000000; }
+
+#more { background: #eee; padding: 2px 20px 10px; width: 410px; border-top: 1px solid #DDD; }
+#near td { cursor: pointer; color: #FF0055; white-space: nowrap; text-align: center; padding: 4px 3px 2px; }
+#near td:hover { background: #FFFFCC; }
+#speeds th { text-align: left; padding-left: 1px; }
+#copyright { margin-top: 30px; color: #AAAAAA; text-align: center; }
+#info { display: none; }
+
+
+.upload-container {
+    margin: 20px 0; /* Space around the upload container */
+    padding: 15px; /* Padding inside the container */
+    background-color: #f9f9f9; /* Light background color */
+    border: 1px solid #ccc; /* Border around the container */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.upload-label {
+    display: block; /* Block display for label */
+    margin: 10px 0; /* Margin for spacing */
+    color: #555; /* Slightly darker color */
+    text-align: center; /* Center text */
+    background-color: #007bff; /* Blue background */
+    color: white; /* White text */
+    padding: 10px; /* Padding inside label */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor */
+    transition: background-color 0.2s; /* Smooth background change */
+}
+
+.upload-label:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+input[type="file"] {
+    display: none; /* Hide the default file input */
+}
+
+.file-list {
+    margin-top: 10px; /* Space above the file list */
+    color: #555; /* Text color for file list */
+}
+
+.file-list div {
+    background-color: #fff; /* White background for file items */
+    padding: 5px; /* Padding for file items */
+    border: 1px solid #ccc; /* Border for file items */
+    border-radius: 4px; /* Rounded corners for file items */
+    margin-top: 5px; /* Space between file items */
+}
