@@ -23,37 +23,6 @@ def calculate_gear_ratio_with_wheel_circumference(current_gear_ratio, wheel_circ
 
     return new_gear_ratio
 
-def find_average_surface(surfaces):
-    surface_values = []
-    for surface in surfaces:
-        if surface == 'asphalt':
-            surface_values.append(1)
-        elif surface == 'concrete':
-            surface_values.append(0.98)
-        elif surface == 'paved':
-            surface_values.append(0.97)
-        elif surface == 'compacted':
-            surface_values.append(0.85)
-        elif surface == 'unpaved':
-            surface_values.append(0.75)
-        elif surface == 'fine_gravel':
-            surface_values.append(0.7)
-        elif surface == 'gravel':
-            surface_values.append(0.66)
-        elif surface == 'ground':
-            surface_values.append(0.4)
-        elif surface == 'grass':
-            surface_values.append(0.35)
-        elif surface == 'cobblestone':
-            surface_values.append(0.25)
-        elif surface == 'dirt':
-            surface_values.append(0.2)
-        elif surface == 'sand':
-            surface_values.append(0.1)
-        else:
-            surface_values.append(1)
-    return np.mean(surface_values) if surface_values else 1
-
 def calculate_optimal_gear_ratio(data):
     # Create fuzzy variables
     speed = ctrl.Antecedent(np.arange(0, 60, 1), 'speed')  # Speed in km/h
@@ -66,9 +35,9 @@ def calculate_optimal_gear_ratio(data):
     speed['medium'] = fuzz.trimf(speed.universe, [15, 25, 35])
     speed['high'] = fuzz.trimf(speed.universe, [30, 40, 60])
 
-    surface['bad'] = fuzz.trimf(surface.universe, [0, 0, 0.25])
-    surface['medium'] = fuzz.trimf(surface.universe, [0.2, 0.5, 0.75])
-    surface['good'] = fuzz.trimf(surface.universe, [0.7, 1, 1])
+    surface['bad'] = fuzz.trimf(surface.universe, [0, 0, 0.66])
+    surface['medium'] = fuzz.trimf(surface.universe, [0.44, 0.77, 0.9])
+    surface['good'] = fuzz.trimf(surface.universe, [0.82, 1, 1])
 
     total_distance = round(data['total_distance'])
     flat_threshold = total_distance * 0.001
@@ -122,15 +91,16 @@ def calculate_optimal_gear_ratio(data):
         rules+=slope_rules
     #
     # Calculate average surface
+    avg_surface = 1
     if data["surfaces"] and len(data["surfaces"]):
-        avg_surface = find_average_surface(data["surfaces"])
-        surface_rules = [
-            ctrl.Rule(surface['bad'], gear_ratio['low']),
-            ctrl.Rule(surface['medium'], gear_ratio['medium']),
-            ctrl.Rule(surface['good'], gear_ratio['high']),
-        ]
-        rules += surface_rules
+        avg_surface = np.mean(data["surfaces"])
     #
+    surface_rules = [
+        ctrl.Rule(surface['bad'], gear_ratio['low']),
+        ctrl.Rule(surface['medium'], gear_ratio['medium']),
+        ctrl.Rule(surface['good'], gear_ratio['high']),
+    ]
+    rules += surface_rules
 
     # Create the control system and simulation
     gear_ratio_ctrl = ctrl.ControlSystem(rules)
