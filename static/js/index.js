@@ -1,143 +1,88 @@
+let translations = []
+
 $(document).ready(function() {
-		$('.dialog').dialog({ autoOpen: false, modal: true });
-		draw();
+	$('#loading-overlay').fadeOut();
+	calculate();
+	loadTranslations('en');
 
-		$('#r').change( function() { draw(); });
-		$('#s').change( function() { draw(); });
-		$('#t').change( function() { draw(); });
-		$('#a').change( function() { draw(); });
-		$('[name=unit]').change( function() { draw(); });
+	$('#language-selector').change( function(val) { loadTranslations(val.currentTarget.value); });
+	$('#chainring').change( function() { calculate(); });
+	$('#sprocket').change( function() { calculate(); });
+	$('#tire').change( function() { calculate(); });
+	$('#ambidextrous').change( function() { calculate(); });
+	$('[name=unit]').change( function(val) { 
+		calculate();
+		$('#avg-speed-unit').html(val.currentTarget.value == 'm' ? '(km/h)' : '(mph)');
+	});
 
-        $('#gpxFiles').on('change', function () {
-            const files = $(this).prop('files');
-            const fileList = $('#fileList');
-            fileList.empty(); // Clear existing file names
-    
-            if (files.length) {
-                $.each(files, function (index, file) {
-                    fileList.append(`<div>${file.name}</div>`); // Append each file name
-                });
-            } else {
-                fileList.append('<div>No files selected.</div>'); // Message for no files
-            }
-        });
+	$('#gpxFiles').on('change', function () {
+		const files = $(this).prop('files');
+		const fileList = $('#fileList');
+		fileList.empty();
 
-        $('#submitGpx').on('click', function() {
-            const formData = new FormData();
-            const files = $('#gpxFiles').prop('files');
+		if (files.length) {
+			$.each(files, function (index, file) {
+				fileList.append(`<div>${file.name}</div>`);
+			});
+		} else {
+			fileList.append('<div>No files selected.</div>');
+		}
+	});
 
-            if (files.length === 0) {
-                alert('Please select GPX files to upload.');
-                return;
-            }
+	$('#submitGpx').on('click', function() {
+		$('#loading-overlay').fadeIn();
+		const formData = new FormData();
+		const files = $('#gpxFiles').prop('files');
 
-            $.each(files, function(index, file) {
-                formData.append('files', file); // Append each file to form data
-            });
-            formData.append('wheel_circumference', $('#t').val());
-            // Send the files to the Flask route
-            $.ajax({
-                url: '/upload_gpx', // Adjust this to your Flask route
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    alert('Files uploaded successfully! \nGear ratio set to recommended.');
-                    $('#r').val(response.optimal_gear_ratios[response.optimal_gear_ratios.length - 1][0]);
-                    $('#s').val(response.optimal_gear_ratios[response.optimal_gear_ratios.length - 1][1]);
-                    draw();
-                },
-                error: function(xhr, status, error) {
-                    alert('Error uploading files: ' + error);
-                    // Handle error response
-                }
-            });
-        });
+		if (files.length === 0) {
+			alert('Please select GPX files to upload.');
+			return;
+		}
+
+		$.each(files, function(index, file) {
+			formData.append('files', file);
+		});
+		formData.append('wheel_circumference', $('#tire').val());
+		$.ajax({
+			url: '/upload_gpx',
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			success: function(response) {
+				$('#loading-overlay').fadeOut();
+				alert('Files uploaded successfully! \nGear ratio set to recommended.');
+				$('#chainring').val(response.optimal_gear_ratios[response.optimal_gear_ratios.length - 1][0]);
+				$('#sprocket').val(response.optimal_gear_ratios[response.optimal_gear_ratios.length - 1][1]);
+				calculate();
+			},
+			error: function(xhr, status, error) {
+				alert('Error uploading files: ' + error);
+			}
+		});
+	});
 });
 
-function pgcd(a,b) { return ( b == 0 ) ? a : pgcd(b, a%b); }
+function calculateGCD(num1, num2) {
+    while (num2 !== 0) {
+        const remainder = num1 % num2;
+        num1 = num2;
+        num2 = remainder;
+    }
+    return num1;
+}
 
-function draw(){
-	var r = $('#r').val();
-	var s = $('#s').val();
-	var canvas = document.getElementById('wheel');
-	var lang = $("input[name='lang']:checked").val();
-	var unit = $("input[name='unit']:checked").val();
+function calculate() {
+	let chainringT = parseInt($('#chainring').val());
+	let sprocketT = parseInt($('#sprocket').val());
+	let unit = $("input[name='unit']:checked").val();
+	const ratio = Math.round(chainringT/sprocketT*100)/100;
+	const tire = $('#tire').val();
 
-	if (canvas.getContext){
-		var thispgcd=pgcd(r,s);
-		var simp_den = r/thispgcd
-		var sp = s/thispgcd;
-		var posx = 80;
-		var posy = 80;
-		var ctx = canvas.getContext('2d');
-		ctx.clearRect(0,0,300,300);
+	$('#ratio').html(ratio);
 
-		// Roue
-		ctx.beginPath();
-		ctx.strokeStyle = "#333333";
-		ctx.lineWidth=4;
-		ctx.arc(posx,posy,72,0,Math.PI*2,true);
-		ctx.stroke();
-		ctx.beginPath();
-		ctx.strokeStyle = "#AAAAAA";
-		ctx.lineWidth=3;
-		ctx.arc(posx,posy,67,0,Math.PI*2,true);
-		ctx.stroke();
-
-		// Rayons
-		ctx.strokeStyle = "#BBBBBB";
-		ctx.lineWidth=1;
-		for (var i=0; i<32; i++) {
-			ctx.beginPath();
-			ctx.arc(posx,posy,67,i*(Math.PI*2/32),((i+0.2)*Math.PI*2/32),false);
-			ctx.lineTo(posx,posy);
-			ctx.stroke();
-		}
-
-		// Skid patchs
-		ctx.strokeStyle = "#FF0055";
-		ctx.lineWidth=8;
-		for (var i=0; i<sp; i++) {
-			ctx.beginPath();
-			ctx.arc(posx,posy,70,i*(Math.PI*2/sp),((i+0.2)*Math.PI*2/sp),false);
-			ctx.stroke();
-		}
-
-		if ( $('#a').attr('checked') && simp_den%2 > 0 ) {
-			ctx.strokeStyle = "#0088FF";
-			var offset = Math.PI/sp;
-			for (var i=0; i<sp; i++) {
-				ctx.beginPath();
-				ctx.arc(posx,posy,70,i*(Math.PI*2/sp)+offset,((i+0.2)*Math.PI*2/sp)+offset,false);
-				ctx.stroke();
-			}
-		}
-
-		// Plateau et pignon
-		cog(ctx,s,posx,posy);
-		cog(ctx,r,posx+100,posy);
-
-		// Chaine
-		ctx.beginPath();
-		ctx.strokeStyle = "#888888";
-		ctx.lineWidth=2;
-		ctx.moveTo(posx,posy-s/2);
-		ctx.lineTo(posx+100,posy-r/2+2);
-		ctx.arc(posx+100,posy,r/2-2,-Math.PI/2,Math.PI/2,false);
-		ctx.lineTo(posx,posy+s/2);
-		ctx.arc(posx,posy,s/2,Math.PI/2,-Math.PI/2,false);
-		ctx.stroke();
-	}
-
-	$('#ratio').html( nformat( Math.round(r/s*100)/100, lang ) );
-
-	var rsp = ( $('#a').attr('checked') && simp_den%2 > 0 ) ? sp*2 : sp;
-	$('#skidpatch').html( rsp );
-
-	var thisFactor = 1;
-	var thisUnit = '';
+	let thisFactor = 1;
+	let thisUnit = '';
 	if ( unit == "m" ) {
 		thisUnit = 'meters';
 	} else {
@@ -145,75 +90,183 @@ function draw(){
 		thisUnit = 'inches';
 	}
 
-	var dev = (r/s) * $('#t').val()/1000; // developpement en m�tres
-	$('#dev').html( nformat( Math.round(dev*100/thisFactor)/100, lang ) + ' ' + thisUnit );
+	let development = ratio * (tire/1000);
+	$('#development').html(Math.round(development*100/thisFactor)/100 + ' ' + thisUnit);
 
-	var near = '<table><tr>';
-	var ratio = r/s;
-	var count = 0;
-	for (var i=28; i<60; i++) {
-		for (var j=9; j<24; j++) {
-			if ( Math.abs(ratio - i/j) < ratio*0.02 ) {
-				if ( count++ %8 == 0 ) { near = near + '</tr><tr>'; }
-				near = near + '<td onclick="$(\'#r\').val(\'' + i + '\'); $(\'#s\').val(\''
-					+ j + '\'); draw('+ i +',' + j + ');"'
-					+ ' title="' + Math.round(i/j*100)/100 +'"'
-					+'>' + i + '&times;' + j
-					+ '</td>';
-			}
+	const situations = [
+		{ name: "Top speed", range: [120, 140] },
+		{ name: "Fast Riding", range: [100, 120] },
+		{ name: "Moderate Riding", range: [80, 110] },
+		{ name: "Casual Riding", range: [70, 90] },
+		{ name: "Hill Climbing", range: [40, 70] },
+		{ name: "Steep hill climbing 💀", range: [30, 50] },
+		{ name: "Long Distance Riding", range: [75, 85] },
+		{ name: "Off-Road Riding", range: [65, 85] },
+	];
+
+	$('#speeds-table-body').empty();
+	situations.forEach(situation => {
+		const [minCadence, maxCadence] = situation.range;
+		const averageCadence = (minCadence + maxCadence) / 2;
+
+		const speedKMH = (averageCadence * development / 1000) * 60;
+		const speedMPH = speedKMH * 0.621371;
+
+		const newRow = `
+			<tr>
+				<td>${situation.name}</td>
+				<td>${minCadence} - ${maxCadence}</td>
+				<td>${unit == "m" ? speedKMH.toFixed(2) : speedMPH.toFixed(2)}</td>
+			</tr>
+		`;
+		$('#speeds-table-body').append(newRow);
+	});
+
+	populateTable(ratio);
+}
+
+function generateGearCombinations(minRing, maxRing, minSprocket, maxSprocket) {
+	const combinations = [];
+	for (let ring = minRing; ring <= maxRing; ring++) {
+		for (let sprocket = minSprocket; sprocket <= maxSprocket; sprocket++) {
+			combinations.push({ ring, sprocket, ratio: (ring / sprocket).toFixed(2) });
 		}
 	}
-	$('#near').html( near + '</tr></table>' );
-
-	var speeds = '<table><tr>';
-	var count = 0;
-	var thisFactor = 1;
-	var thisUnit = ' km/h';
-	var thisUnit2 = '@';
-	var thisUnit3 = ' rpm';
-	if ( unit == "i" ) {
-		thisFactor = 1.609;
-		thisUnit = ' mph';
-	}
-	if ( lang == "fr" ) {
-		//thisUnit2 = '&agrave; ';
-		thisUnit2 = '';
-		thisUnit3 = ' tr/mn';
-	}
-	for (var i=50; i<140; i= i+10) {
-		if ( count++ %3 == 0 ) { speeds = speeds + '</tr><tr>'; }
-		var cssclass = ( i== 90 ) ? ' class="rpm90"' : ''; 
-		speeds = speeds + '<td' + cssclass +'>' + nformat( Math.round(dev*i/100*60/thisFactor)/10, lang )
-			+ thisUnit + '</td><th' + cssclass + '>' + thisUnit2 + i + thisUnit3 + '</th>';
-	}
-	$('#speeds').html( speeds + '</tr></table>' );
+	return combinations;
 }
 
-function cog(ctx,teeth,x,y) {
-	ctx.beginPath();
-	ctx.arc(x,y,teeth/2.5,0,Math.PI*2,true); // Cercle ext�rieur
-	ctx.fillStyle = "#333333";
-	ctx.fill();
-	for (var i=0; i<teeth; i++) {
-		ctx.beginPath();
-		ctx.arc(x,y,teeth/2.5+2,i*(Math.PI*2/teeth),((i+0.5)*Math.PI*2/teeth),false);
-		ctx.lineTo(x,y);
-		ctx.fill();
-	}
-	for (var i=0; i<5; i++) {
-		ctx.beginPath();
-		ctx.fillStyle = "white";
-		ctx.arc(x,y,(teeth-5)/3.5,i*(Math.PI*2/5),((i+0.7)*Math.PI*2/5),false);
-		ctx.lineTo(x,y);
-		ctx.fill();
-	}
-} 
+function populateTable(currentRatio, tolerance = 0.05) {
+	const tableBody = $("#simmilar-ratios-table");
+	tableBody.empty();
 
-function nformat(num,lang) {
-	var str = String(num);
-	if ( lang == "fr" ) {
-		return (str.replace(/\./g, ','));
-	} else {
-		return (str);
+	const allCombinations = generateGearCombinations(28, 60, 11, 28);
+
+	const filteredCombinations = allCombinations.filter(({ ratio }) => {
+		return Math.abs(ratio - currentRatio) <= tolerance;
+	});
+
+	let row = $("<tr></tr>");
+	filteredCombinations.forEach(({ ring, sprocket, ratio }, index) => {
+		const cell = $(`<td title="${ratio}" onclick="changeGearRatio(${ring}, ${sprocket}, ${ratio})">${ring}×${sprocket}</td>`);
+		row.append(cell);
+
+		if ((index + 1) % 8 === 0) {
+			tableBody.append(row);
+			row = $("<tr></tr>");
+		}
+	});
+
+	if (row.children().length > 0) {
+		tableBody.append(row);
 	}
 }
+
+function changeGearRatio(ring, sprocket, ratio) {
+	$('#chainring').val(ring);
+    $('#sprocket').val(sprocket);
+	$('#ratio').text(ratio);
+	calculate();
+}
+
+function loadTranslations(lang) {
+	$.getJSON('static/locales/' + lang + '.json', function(translations) {
+		translations = translations;
+		$('[data-translate]').each(function() {
+			var key = $(this).data('translate');
+			$(this).text(translations[key]);
+		});
+	});
+}
+
+// function draw(){
+	
+// 	var canvas = document.getElementById('wheel');
+// 	var lang = $("input[name='lang']:checked").val();
+	
+
+// 	if (canvas.getContext){
+// 		var thispgcd=pgcd(r,s);
+// 		var simp_den = r/thispgcd
+// 		var sp = s/thispgcd;
+// 		var posx = 80;
+// 		var posy = 80;
+// 		var ctx = canvas.getContext('2d');
+// 		ctx.clearRect(0,0,300,300);
+
+// 		// Roue
+// 		ctx.beginPath();
+// 		ctx.strokeStyle = "#333333";
+// 		ctx.lineWidth=4;
+// 		ctx.arc(posx,posy,72,0,Math.PI*2,true);
+// 		ctx.stroke();
+// 		ctx.beginPath();
+// 		ctx.strokeStyle = "#AAAAAA";
+// 		ctx.lineWidth=3;
+// 		ctx.arc(posx,posy,67,0,Math.PI*2,true);
+// 		ctx.stroke();
+
+// 		// Rayons
+// 		ctx.strokeStyle = "#BBBBBB";
+// 		ctx.lineWidth=1;
+// 		for (var i=0; i<32; i++) {
+// 			ctx.beginPath();
+// 			ctx.arc(posx,posy,67,i*(Math.PI*2/32),((i+0.2)*Math.PI*2/32),false);
+// 			ctx.lineTo(posx,posy);
+// 			ctx.stroke();
+// 		}
+
+// 		// Skid patchs
+// 		ctx.strokeStyle = "#FF0055";
+// 		ctx.lineWidth=8;
+// 		for (var i=0; i<sp; i++) {
+// 			ctx.beginPath();
+// 			ctx.arc(posx,posy,70,i*(Math.PI*2/sp),((i+0.2)*Math.PI*2/sp),false);
+// 			ctx.stroke();
+// 		}
+
+// 		if ( $('#a').attr('checked') && simp_den%2 > 0 ) {
+// 			ctx.strokeStyle = "#0088FF";
+// 			var offset = Math.PI/sp;
+// 			for (var i=0; i<sp; i++) {
+// 				ctx.beginPath();
+// 				ctx.arc(posx,posy,70,i*(Math.PI*2/sp)+offset,((i+0.2)*Math.PI*2/sp)+offset,false);
+// 				ctx.stroke();
+// 			}
+// 		}
+
+// 		// Plateau et pignon
+// 		cog(ctx,s,posx,posy);
+// 		cog(ctx,r,posx+100,posy);
+
+// 		// Chaine
+// 		ctx.beginPath();
+// 		ctx.strokeStyle = "#888888";
+// 		ctx.lineWidth=2;
+// 		ctx.moveTo(posx,posy-s/2);
+// 		ctx.lineTo(posx+100,posy-r/2+2);
+// 		ctx.arc(posx+100,posy,r/2-2,-Math.PI/2,Math.PI/2,false);
+// 		ctx.lineTo(posx,posy+s/2);
+// 		ctx.arc(posx,posy,s/2,Math.PI/2,-Math.PI/2,false);
+// 		ctx.stroke();
+// 	}
+// }
+
+// function cog(ctx,teeth,x,y) {
+// 	ctx.beginPath();
+// 	ctx.arc(x,y,teeth/2.5,0,Math.PI*2,true); // Cercle ext�rieur
+// 	ctx.fillStyle = "#333333";
+// 	ctx.fill();
+// 	for (var i=0; i<teeth; i++) {
+// 		ctx.beginPath();
+// 		ctx.arc(x,y,teeth/2.5+2,i*(Math.PI*2/teeth),((i+0.5)*Math.PI*2/teeth),false);
+// 		ctx.lineTo(x,y);
+// 		ctx.fill();
+// 	}
+// 	for (var i=0; i<5; i++) {
+// 		ctx.beginPath();
+// 		ctx.fillStyle = "white";
+// 		ctx.arc(x,y,(teeth-5)/3.5,i*(Math.PI*2/5),((i+0.7)*Math.PI*2/5),false);
+// 		ctx.lineTo(x,y);
+// 		ctx.fill();
+// 	}
+// } 

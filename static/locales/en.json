@@ -1,0 +1,20 @@
+{
+    "loading": "Loading, please wait, it may take few minutes...",
+    "measurement-system": "Measurement system",
+    "metric": "metric",
+    "imperial": "imperial",
+    "chainring": "Chainring",
+    "sprocket": "Rear sprocket",
+    "tire": "Tire",
+    "upload-gpx": "Upload GPX files",
+    "upload-gpx-desc": "Upload your GPX files to find gear ratio that suits for your rides!",
+    "chose-gpx": "Choose GPX files",
+    "upload": "Upload",
+    "analysis": "Analysis",
+    "ratio": "Ratio: ",
+    "d-per-pedal": "Distance per pedals rotation: ",
+    "simmilar-gears": "Simmilar gears",
+    "riding-situation": "Riding Situation",
+    "cadence-range": "Cadence Range (RPM)",
+    "average-speed": "Average Speed "
+}

@@ -46,6 +46,19 @@ $(document).ready(() => {
 
     $.each(wheelSizes, (index, size) => {
         let option = $('<option></option>').val(size.value).text(size.label);
-        $('#t').append(option);
+        $('#tire').append(option);
     });
+
+    $('#sprocket').empty();
+    for (i = 11 ; i <= 23 ; i++) {
+        let option = $('<option></option>').val(i).text(`${i} t`);
+        $('#sprocket').append(option);
+    }
+
+    $('#chainring').empty();
+    for (i = 28 ; i <= 69 ; i++) {
+        let option = $('<option></option>').val(i).text(`${i} t`);
+        $('#chainring').append(option);
+    }
+
 });

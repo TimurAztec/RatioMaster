@@ -1,76 +1,201 @@
-canvas { margin: -35px 0 10px; float: right; clear: right; }
-.dialog p, label span, span, th, td, #form label { color: #555; font: normal 0.8em sans-serif; }
-h3 { font: bold italic 1em sans-serif; margin: 15px 0 5px;  }
-table { width: 100% }
-td { text-align: left; background: #ffffff;padding:4px 3px 2px; text-align: right; border: 1px solid #CCC;}
-th { text-align: right; padding: 4px 3px 2px; }
-
-.clickable { cursor: pointer; color: #FF0055; text-decoration: underline; }
-.sep { margin: 0 10px; border-right: 1px solid #ccc; line-height: 25px; }
-
-#container { width: 450px; margin: 0 auto; }
-#salogo a img { border: none; margin: 20px; } 
-#calc { background: #fafafa; padding: 5px 20px 10px; width: 410px; clear: left; }
-
-#info { background: #FFB; padding: 5px 10px 2px; vertical-align: middle; font-size: 0.8em; }
-#settings { background: #eee; padding: 0px 10px; border-bottom: 1px solid #DDD; margin-top: 10px; }
-#settings label { color: #666; }
-#settings .flag { vertical-align: middle ; }
-
-#form { float: left; height: 110px; width: 180px; }
-#form label { display: block; float: left; clear: left; height: 20px; padding-top: 3px; }
-#form input, #form select { float: right; }
-
-#results td, #results tr { white-space: nowrap }
-#results td { font-weight: bold; color: #000000; }
-
-#more { background: #eee; padding: 2px 20px 10px; width: 410px; border-top: 1px solid #DDD; }
-#near td { cursor: pointer; color: #FF0055; white-space: nowrap; text-align: center; padding: 4px 3px 2px; }
-#near td:hover { background: #FFFFCC; }
-#speeds th { text-align: left; padding-left: 1px; }
-#copyright { margin-top: 30px; color: #AAAAAA; text-align: center; }
-#info { display: none; }
-
-
-.upload-container {
-    margin: 20px 0; /* Space around the upload container */
-    padding: 15px; /* Padding inside the container */
-    background-color: #f9f9f9; /* Light background color */
-    border: 1px solid #ccc; /* Border around the container */
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.upload-label {
-    display: block; /* Block display for label */
-    margin: 10px 0; /* Margin for spacing */
-    color: #555; /* Slightly darker color */
-    text-align: center; /* Center text */
-    background-color: #007bff; /* Blue background */
-    color: white; /* White text */
-    padding: 10px; /* Padding inside label */
-    border-radius: 4px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor */
-    transition: background-color 0.2s; /* Smooth background change */
+main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
-.upload-label:hover {
-    background-color: #0056b3; /* Darker blue on hover */
+.separator { margin: 0 10px; border-right: 1px solid #ccc; line-height: 25px; }
+.clickable { cursor: pointer; color: #f55555; text-decoration: underline; }
+.center-column { display: flex; flex-direction: column; align-items: center; }
+
+#upload-container {
+    max-width: 500px;
+    margin: 12px auto;
+    padding: 16px;
+    background-color: #f2e9e1;
+    border: 4px solid #e07b39;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+h3 {
+    font-size: 24px;
+    color: #3b3b3b;
+    border-bottom: 3px solid #e07b39;
+    padding-bottom: 10px;
+}
+
+p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 20px;
 }
 
 input[type="file"] {
-    display: none; /* Hide the default file input */
+    display: none;
+}
+
+.upload-label {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #e07b39;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    border: 2px solid #b55e1a;
+    border-radius: 8px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.upload-label:hover {
+    background-color: #b55e1a;
+    transform: scale(1.05);
 }
 
 .file-list {
-    margin-top: 10px; /* Space above the file list */
-    color: #555; /* Text color for file list */
+    margin: 10px 0;
+    font-size: 14px;
+    color: #555;
+    padding: 10px;
+    border: 2px dashed #e07b39;
+    background-color: #fff7e3;
 }
 
-.file-list div {
-    background-color: #fff; /* White background for file items */
-    padding: 5px; /* Padding for file items */
-    border: 1px solid #ccc; /* Border for file items */
-    border-radius: 4px; /* Rounded corners for file items */
-    margin-top: 5px; /* Space between file items */
+.submit-button {
+    background-color: #33a1fd;
+    color: #fff;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: 2px solid #2575b2;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.submit-button:hover {
+    background-color: #2575b2;
+    transform: scale(1.05);
+}
+
+.values {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 8px 12px;
+    align-items: center;
+}
+
+.values label {
+    font-size: 14px;
+    color: #333;
+}
+
+.values select,
+.values input[type="checkbox"] {
+    padding: 4px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 13px;
+}
+
+.values select:focus,
+.values input[type="checkbox"]:focus {
+    border-color: #ff6600;
+}
+
+@media (max-width: 600px) {
+    .values {
+        grid-template-columns: auto;
+    }
+}
+
+#simmilar-ratios-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#simmilar-ratios-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+}
+
+#simmilar-ratios-table td:hover {
+    background-color: #ff9900;
+    color: #fff;
+}
+
+
+#speeds-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+}
+
+#speeds-table th, #speeds-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#speeds-table th {
+    background-color: #f4f4f4;
+    color: #333;
+    font-weight: bold;
+}
+
+#speeds-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+#speeds-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#speeds-table td {
+    color: #555;
+}
+
+#loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    text-align: center;
+    color: white;
+    padding-top: 20%;
+    font-size: 24px;
+}
+
+.spinner {
+    border: 8px solid #f3f3f3; /* Light gray */
+    border-top: 8px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 2s linear infinite;
+    margin: 0 auto; /* Center the spinner */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

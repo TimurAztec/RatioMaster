@@ -1,80 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Fixed Gear Calculator - Ratio &amp; Skid Patch for all!</title>
+        <title>Fixed Gear / Single Speed - Gear ratio calculator</title>
         <meta name="viewport" content="width=465; user-scalable=no">
         <link type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" media="screen">
         <link type="text/css" href="{{ url_for('static', filename='css/jquery-ui.min.css') }}" rel="stylesheet">
+        <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
         <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/values.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/index.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/wheels.js') }}"></script>
     </head>
     <body>
-        <div id="container">
-            <div id="salogo">
-                <a href="/" title="Ratio Master" onfocus="if(this.blur)this.blur()"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="RATIO MASTER"></a>
-            </div>
-        </div>
-        <div id="settings">
-            <label for="language-selector">
-                <select id="language-selector" name="lang" onchange="document.getElementById('l1').checked = this.value === 'en'; document.getElementById('l2').checked = this.value === 'fr';">
-                    <option value="en" selected="selected"><img src="/ffgc/images/en.png" class="flag" alt="English"> English</option>
-                    <option value="fr"><img src="/ffgc/images/fr.png" class="flag" alt="Ukrainian"> Ukrainian</option>
-                </select>
-            </label>            
-            <span class="sep"></span>
-            <span id="s60" class="multi clickable">About</span>
-        </div>
-        <div id="calc">
-            <h3 class="multi" id="s30">Settings</h3><h3>
-            <div id="form">
-                <div>
-                    <label for="u1"><span class="multi" id="s10">imperial</span><input id="u1" type="radio" name="unit" value="i"></label>
-                    <label for="u2"><span class="multi" id="s20">metric</span><input id="u2" type="radio" name="unit" value="m" checked="checked"></label>
+        <div id="loading-overlay"><div class="spinner"></div><span data-translate="loading">Loading, please wait, it may take few minutes...</span></div>
+        <header>
+            <span>
+                <a href="/" title="Ratio Master"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="RATIO MASTER"></a>
+            </span>
+            <span id="settings">
+                <label for="language-selector">
+                    <select id="language-selector" name="lang">
+                        <option value="en" selected="selected">🇬🇧 English</option>
+                        <option value="ua">🇺🇦 Ukrainian</option>
+                    </select>
+                </label>            
+                <span class="separator"></span>
+                <span class="clickable">About</span>
+            </span>
+        </header>
+        <main>
+            <div id="calc" class="center-column">
+                <div id="form">
+                    <div class="center-column">
+                        <h3 style="margin-bottom: 0px;" data-translate="measurement-system">Measurement system</h6>
+                        <div style="padding: 0.66rem">
+                            <label for="u2"><span class="multi" data-translate="metric">metric</span><input id="u2" type="radio" name="unit" value="m" checked="checked"></label>
+                            <label for="u1"><span class="multi" data-translate="imperial">imperial</span><input id="u1" type="radio" name="unit" value="i"></label>
+                        </div>
+                    </div>
+                    <div class="values">
+                        <label for="chainring" class="multi" data-translate="chainring">Chainring</label>
+                        <select id="chainring"></select>
+                        <label for="sprocket" class="multi" data-translate="sprocket">Rear sprocket</label>
+                        <select id="sprocket"></select>
+                        <label for="tire" class="multi" data-translate="tire">Tire</label>
+                        <select id="tire"></select>
+                        <!-- <label for="ambidextrous" class="multi" id="s80">Ambidextrous skid</label>
+                        <input type="checkbox" name="ambidextrous" id="ambidextrous"> -->
+                    </div>
                 </div>
-                <label class="multi" id="s40">Chain ring</label>
-                <select id="r">
-                <option value="28">28 t</option><option value="29">29 t</option><option value="30">30 t</option><option value="31">31 t</option><option value="32">32 t</option><option value="33">33 t</option><option value="34">34 t</option><option value="35">35 t</option><option value="36">36 t</option><option value="37">37 t</option><option value="38">38 t</option><option value="39">39 t</option><option value="40">40 t</option><option value="41">41 t</option><option value="42">42 t</option><option value="43">43 t</option><option value="44">44 t</option><option value="45">45 t</option><option value="46" selected="selected">46 t</option><option value="47">47 t</option><option value="48">48 t</option><option value="49">49 t</option><option value="50">50 t</option><option value="51">51 t</option><option value="52">52 t</option><option value="53">53 t</option><option value="54">54 t</option><option value="55">55 t</option><option value="56">56 t</option><option value="57">57 t</option><option value="58">58 t</option><option value="59">59 t</option>				</select>
-                <label class="multi" id="s50">Rear sproket</label>
-                <select id="s">
-                <option value="9">9 t</option><option value="10">10 t</option><option value="11">11 t</option><option value="12">12 t</option><option value="13">13 t</option><option value="14">14 t</option><option value="15">15 t</option><option value="16">16 t</option><option value="17">17 t</option><option value="18" selected="selected">18 t</option><option value="19">19 t</option><option value="20">20 t</option><option value="21">21 t</option><option value="22">22 t</option><option value="23">23 t</option>				</select>
+                <div id="upload-container">
+                    <h3 style="margin-top: 6px;" data-translate="upload-gpx">Upload GPX files</h3>
+                    <p data-translate="upload-gpx-desc">Upload your GPX files to find gear ratio that suits for your rides!</p>
+                    <span>
+                        <input type="file" id="gpxFiles" multiple accept=".gpx" />
+                        <label for="gpxFiles" class="upload-label" data-translate="chose-gpx">Choose GPX files</label>
+                    </span>
+                    <div id="fileList" class="file-list"></div>
+                    <button id="submitGpx" type="button" class="submit-button" data-translate="upload">Upload</button>
+                </div>
 
-                <label for="t" class="multi" id="s70">Tire</label>
-                <select id="t">
-                </select>
-                <label for="a" class="multi" id="s80">Ambidextrous skid</label><input type="checkbox" name="a" id="a" style="float: right;">
+                <!-- <canvas id="wheel" width="480" height="320"></canvas> -->
+
+                <h3 class="multi" data-translate="analysis">Analysis</h3>
+                <div>
+                    <span>
+                        <span data-translate="ratio">Ratio: </span><span id="ratio" style="font-weight: bold;"></span>
+                    </span>
+                    <span class="separator"></span>
+                    <span>
+                        <span data-translate="d-per-pedal">Distance per pedals rotation: </span><span id="development" style="font-weight: bold;"></span>
+                    </span>
+                </div>
             </div>
-
-            <canvas id="wheel" width="210" height="160"></canvas>
-
-            </h3><h3 class="multi" id="s90">Analysis</h3>
-            <table id="results">
-                <tbody>
-                    <tr>
-                        <th class="multi clickable" id="s100">Ratio :</th><td id="ratio">2.56</td>
-                        <th class="multi clickable" id="s110">Skid patch :</th><td id="skidpatch">9</td>
-                        <th class="multi clickable" id="s120">Development :</th><td id="dev">210.98 inches</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div id="more">
-            <h3 class="multi" id="s130">Equivalent gear ±2%</h3>
-            <div id="near"><table><tbody><tr></tr><tr><td onclick="$('#r').val('28'); $('#s').val('11'); draw(28,11);" title="2.55">28×11</td><td onclick="$('#r').val('31'); $('#s').val('12'); draw(31,12);" title="2.58">31×12</td><td onclick="$('#r').val('33'); $('#s').val('13'); draw(33,13);" title="2.54">33×13</td><td onclick="$('#r').val('36'); $('#s').val('14'); draw(36,14);" title="2.57">36×14</td><td onclick="$('#r').val('38'); $('#s').val('15'); draw(38,15);" title="2.53">38×15</td><td onclick="$('#r').val('39'); $('#s').val('15'); draw(39,15);" title="2.6">39×15</td><td onclick="$('#r').val('41'); $('#s').val('16'); draw(41,16);" title="2.56">41×16</td><td onclick="$('#r').val('43'); $('#s').val('17'); draw(43,17);" title="2.53">43×17</td></tr><tr><td onclick="$('#r').val('44'); $('#s').val('17'); draw(44,17);" title="2.59">44×17</td><td onclick="$('#r').val('46'); $('#s').val('18'); draw(46,18);" title="2.56">46×18</td><td onclick="$('#r').val('48'); $('#s').val('19'); draw(48,19);" title="2.53">48×19</td><td onclick="$('#r').val('49'); $('#s').val('19'); draw(49,19);" title="2.58">49×19</td><td onclick="$('#r').val('51'); $('#s').val('20'); draw(51,20);" title="2.55">51×20</td><td onclick="$('#r').val('52'); $('#s').val('20'); draw(52,20);" title="2.6">52×20</td><td onclick="$('#r').val('53'); $('#s').val('21'); draw(53,21);" title="2.52">53×21</td><td onclick="$('#r').val('54'); $('#s').val('21'); draw(54,21);" title="2.57">54×21</td></tr><tr><td onclick="$('#r').val('56'); $('#s').val('22'); draw(56,22);" title="2.55">56×22</td><td onclick="$('#r').val('57'); $('#s').val('22'); draw(57,22);" title="2.59">57×22</td><td onclick="$('#r').val('58'); $('#s').val('23'); draw(58,23);" title="2.52">58×23</td><td onclick="$('#r').val('59'); $('#s').val('23'); draw(59,23);" title="2.57">59×23</td></tr></tbody></table></div>
-
-            <h3 class="multi" id="s140">Cadence / Speed</h3>
-            <div id="speeds"><table><tbody><tr></tr><tr><td>10 mph</td><th>@50 rpm</th><td>12 mph</td><th>@60 rpm</th><td>14 mph</td><th>@70 rpm</th></tr><tr><td>16 mph</td><th>@80 rpm</th><td class="rpm90">18 mph</td><th class="rpm90">@90 rpm</th><td>20 mph</td><th>@100 rpm</th></tr><tr><td>22 mph</td><th>@110 rpm</th><td>24 mph</td><th>@120 rpm</th><td>26 mph</td><th>@130 rpm</th></tr></tbody></table></div>
-        </div>
-        <div class="upload-container">
-            <h3>Upload GPX Files</h3>
-            <input type="file" id="gpxFiles" multiple accept=".gpx" />
-            <label for="gpxFiles" class="upload-label">Choose GPX files</label>
-            <div id="fileList" class="file-list"></div>
-            <button id="submitGpx" type="button" class="submit-button">Submit</button>
-        </div>
-        <div id="copyright">© surplace 2024</div>
-
-        </div>
+            <div id="more">
+                <table id="speeds-table">
+                    <thead>
+                        <tr>
+                            <th data-translate="riding-situation">Riding Situation</th>
+                            <th data-translate="cadence-range">Cadence Range (RPM)</th>
+                            <th data-translate="average-speed">Average Speed <span id="avg-speed-unit">(km/h)</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="speeds-table-body">
+                        <!-- Rows will be populated dynamically -->
+                    </tbody>
+                </table>
+        
+                <h3 class="multi" data-translate="simmilar-gears">Simmilar gears</h3>
+                <div>
+                    <table id="simmilar-ratios-table">
+                        <tbody>
+                            <!-- Rows will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
     </body>
 </html>
