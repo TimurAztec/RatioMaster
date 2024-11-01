@@ -50,13 +50,13 @@ $(document).ready(() => {
     });
 
     $('#sprocket').empty();
-    for (i = 11 ; i <= 23 ; i++) {
+    for (i = 11 ; i <= 28 ; i++) {
         let option = $('<option></option>').val(i).text(`${i} t`);
         $('#sprocket').append(option);
     }
 
     $('#chainring').empty();
-    for (i = 28 ; i <= 69 ; i++) {
+    for (i = 28 ; i <= 100 ; i++) {
         let option = $('<option></option>').val(i).text(`${i} t`);
         $('#chainring').append(option);
     }
