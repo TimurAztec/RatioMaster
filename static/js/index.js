@@ -1,4 +1,5 @@
 let translations = []
+let resultsChart;
 
 $(document).ready(function() {
 	$('#loading-overlay').fadeOut();
@@ -15,6 +16,31 @@ $(document).ready(function() {
 		$('#avg-speed-unit').html(val.currentTarget.value == 'm' ? '(km/h)' : '(mph)');
 	});
 
+	$("#results-overlay").dialog({
+		width: 600,
+		height: 800,
+		modal: true,
+		autoOpen: false,
+		draggable: false,
+    	resizable: false,
+		position: { my: "center", at: "center", of: window },
+		open: function() {
+			$(this).parent().css({
+				position: "fixed",
+				top: "50%",
+				left: "50%",
+				transform: "translate(-50%, -50%)"
+			});
+
+			$(".ui-dialog-titlebar-close").html("&#10005;");
+		}
+	});
+    $("#results-overlay").dialog("close");
+
+    $("#close-dialog").click(function() {
+        $("#results-overlay").dialog("close");
+    });
+
 	$('#gpxFiles').on('change', function () {
 		const files = $(this).prop('files');
 		const fileList = $('#fileList');
@@ -30,18 +56,22 @@ $(document).ready(function() {
 	});
 
 	$('#submitGpx').on('click', function() {
-		$('#loading-overlay').fadeIn();
 		const formData = new FormData();
 		const files = $('#gpxFiles').prop('files');
+//		const stravaLinks = $('#stravaLinks').val().trim();
 
-		if (files.length === 0) {
-			alert('Please select GPX files to upload.');
+		if (files.length === 0 && stravaLinks.length === 0) {
+			alert('Please add GPX data to upload.');
 			return;
 		}
 
+        $('#loading-overlay').fadeIn();
 		$.each(files, function(index, file) {
 			formData.append('files', file);
 		});
+//		if (stravaLinks) {
+//            formData.append('links', JSON.stringify(stravaLinks.split('\n')));
+//        }
 		formData.append('wheel_circumference', $('#tire').val());
 		$.ajax({
 			url: '/upload_gpx',
@@ -51,9 +81,11 @@ $(document).ready(function() {
 			contentType: false,
 			success: function(response) {
 				$('#loading-overlay').fadeOut();
-				alert('Files uploaded successfully! \nGear ratio set to recommended.');
-				$('#chainring').val(response.optimal_gear_ratios[response.optimal_gear_ratios.length - 1][0]);
-				$('#sprocket').val(response.optimal_gear_ratios[response.optimal_gear_ratios.length - 1][1]);
+				$("#results-overlay").dialog("open");
+				updateResultsChart(response.data);
+				$("#recommended-gear-ratio").text((response.optimal_gear_ratio[0]/response.optimal_gear_ratio[1]).toFixed(2));
+				$('#chainring').val(response.optimal_gear_ratio[0]);
+				$('#sprocket').val(response.optimal_gear_ratio[1]);
 				calculate();
 			},
 			error: function(xhr, status, error) {
@@ -176,6 +208,73 @@ function loadTranslations(lang) {
 			$(this).text(translations[key]);
 		});
 	});
+}
+
+function updateResultsChart(data) {
+    const labels = ["Cadence", "Heart Rate", "Estimated Power", "Speed", "Surface Quality", "Elevation Gain"];
+    const dataValues = [
+        normalizeValue(data.avg_cadence, 0, 140),
+        normalizeValue(data.avg_heart_rate, 40, 200),
+        normalizeValue(data.avg_power, 0, 1000),
+        normalizeValue(data.avg_speed, 0, 70),
+        normalizeValue(data.avg_surface, 0, 1),
+        normalizeValue(data.elevation_gain, 0, data.elevation_threshold)
+    ];
+	const filteredLabels = labels.filter((_, index) => dataValues[index] !== 0);
+	const filteredData = dataValues.filter(value => value !== 0);
+    if (resultsChart) {
+        resultsChart.data.labels = filteredLabels;
+        resultsChart.data.datasets[0].data = filteredData;
+        resultsChart.update();
+    } else {
+        const ctx = document.getElementById("resultsChart").getContext("2d");
+        resultsChart = new Chart(ctx, {
+            type: "radar",
+            data: {
+                labels: filteredLabels,
+                datasets: [{
+                    label: "Ride Metrics",
+                    data: filteredData,
+                    backgroundColor: "rgba(54, 162, 235, 0.2)",
+                    borderColor: "rgba(54, 162, 235, 1)",
+                    borderWidth: 1,
+					pointRadius: 0
+                }]
+            },
+            responsive: true,
+            maintainAspectRatio: true,
+			options: { 
+				scales: {
+					r: {
+					  ticks:{
+						display: false
+					  }
+					}
+				  },
+				scale: {
+					ticks: {
+						display: false, // Hides numerical values
+                        beginAtZero: true
+					},
+                    grid: {
+                        display: false // Hides grid lines
+                    },
+                    angleLines: {
+                        display: false // Hides angle lines
+                    },
+                    pointLabels: {
+                        display: false // Hides the axis labels
+                    }
+				}
+			}
+        });
+    }
+}
+
+function normalizeValue(value, min, max) {
+    let returnValue = value ? (value - min) / (max - min) : 0;
+	if (returnValue > 1) returnValue = 1;
+    return returnValue;
 }
 
 // function draw(){

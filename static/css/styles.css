@@ -69,12 +69,24 @@ input[type="file"] {
     background-color: #fff7e3;
 }
 
+.strava-textarea {
+    width: 95%;
+    height: 100px;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    resize: none;
+}
+
 .submit-button {
     background-color: #33a1fd;
     color: #fff;
     font-size: 16px;
     padding: 10px 20px;
     border: 2px solid #2575b2;
+    margin-top: 4px;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
@@ -186,16 +198,72 @@ input[type="file"] {
 }
 
 .spinner {
-    border: 8px solid #f3f3f3; /* Light gray */
-    border-top: 8px solid #3498db; /* Blue */
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
     border-radius: 50%;
     width: 60px;
     height: 60px;
     animation: spin 2s linear infinite;
-    margin: 0 auto; /* Center the spinner */
+    margin: 0 auto;
 }
 
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+.results-content {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    text-align: center;
+    color: #333;
+    font-family: Arial, sans-serif;
+}
+
+.results-message {
+    font-size: 32px;
+    margin: 10px 0;
+}
+
+.highlighted-text {
+    font-weight: bold;
+    color: #ff5722;
+}
+
+.success-message {
+    color: #4caf50;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+#resultsChart {
+    width: 100%;
+    height: 300px;
+    margin-top: 15px;
+}
+
+.ui-dialog-titlebar {
+    background-color: #333;
+    color: white;
+    border-radius: 8px 8px 0 0;
+    padding: 8px;
+}
+
+.ui-dialog-titlebar-close {
+    background-color: #ff5722 !important;
+    color: white !important;
+    border: none;
+    width: 24px;
+    height: 24px;
+    font-size: 18px;
+    text-align: center;
+    line-height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.ui-dialog-titlebar-close:hover {
+    background-color: darkred !important;
 }

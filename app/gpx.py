@@ -154,7 +154,6 @@ def map_tracktype_value(tracktype):
 
 
 def process_element(element, coordinates, max_distance):
-    # Get element coordinates
     element_coords = None
     if 'center' in element:
         element_coords = (element['center']['lat'], element['center']['lon'])
@@ -167,7 +166,7 @@ def process_element(element, coordinates, max_distance):
     is_near = any(calculate_distance(coord, element_coords) <= max_distance for coord in coordinates)
 
     if not is_near:
-        return None  # Skip element if it's too far
+        return None
 
     score = 0
     tag_count = 0
@@ -210,7 +209,7 @@ def get_surface_types(coordinates, max_distance=100, max_workers=4):
       way({min_lat},{min_lon},{max_lat},{max_lon})["surface"];
     );
     out body geom;
-    """  # Added 'geom' to retrieve geometry for distance calculations
+    """
 
     response = requests.get("http://overpass-api.de/api/interpreter", params={'data': query})
 
@@ -222,7 +221,6 @@ def get_surface_types(coordinates, max_distance=100, max_workers=4):
 
     results = []
 
-    # Use ThreadPoolExecutor to parallelize the processing of elements
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_element = {
             executor.submit(process_element, element, coordinates, max_distance): element
@@ -251,54 +249,64 @@ def parse_gpx_data(gpx_data):
     for track in gpx_data.tracks:
         for segment in track.segments:
             for point in segment.points:
-                # Append elevation
-                elevations.append(point.elevation)
-                coordinates.append((point.latitude, point.longitude))
+                if point.elevation is not None:
+                    elevations.append(point.elevation)
+                if point.latitude is not None and point.longitude is not None:
+                    coordinates.append((point.latitude, point.longitude))
 
-                # Add optional attributes if they exist and are not None or empty
                 if hasattr(point, 'speed') and point.speed is not None:
                     speeds.append(point.speed)
+
                 if hasattr(point, 'heart_rate') and point.heart_rate is not None:
                     heart_rates.append(point.heart_rate)
+
                 if hasattr(point, 'cadence') and point.cadence is not None:
                     cadences.append(point.cadence)
+
                 if hasattr(point, 'power') and point.power is not None:
                     powers.append(point.power)
 
                 if previous_point is not None:
-                    # Calculate distance between two points using coordinates
-                    distance = calculate_distance(
-                        (previous_point.latitude, previous_point.longitude),
-                        (point.latitude, point.longitude)
-                    )
-                    distances.append(distance)
+                    if previous_point.latitude is not None and previous_point.longitude is not None and \
+                            point.latitude is not None and point.longitude is not None:
+                        distance = calculate_distance(
+                            (previous_point.latitude, previous_point.longitude),
+                            (point.latitude, point.longitude)
+                        )
+                        distances.append(distance)
 
-                    # Calculate slope (elevation change / horizontal distance)
-                    elevation_change = point.elevation - previous_point.elevation
-                    if distance > 0:  # Avoid division by zero
-                        slope = (elevation_change / distance) * 100  # Slope in percentage
-                        slopes.append(slope)
+                        if previous_point.elevation is not None and point.elevation is not None:
+                            elevation_change = point.elevation - previous_point.elevation
+                            if distance > 0:
+                                slope = (elevation_change / distance) * 100
+                                slopes.append(slope)
 
-                    # Calculate time difference in seconds
-                    time_difference = (point.time - previous_point.time).total_seconds()
+                    if hasattr(point, 'time') and point.time is not None and \
+                            hasattr(previous_point, 'time') and previous_point.time is not None:
+                        time_difference = (point.time - previous_point.time).total_seconds()
 
-                    # Calculate speed only if time difference is greater than 0
-                    if time_difference > 0:
-                        speed_mps = distance / time_difference  # Speed in meters per second
-                        speed_kmh = speed_mps * 3.6  # Convert to kilometers per hour
-                        speeds.append(speed_kmh)  # Append calculated speed (km/h)
+                        if time_difference > 0:
+                            speed_mps = distance / time_difference
+                            speed_kmh = speed_mps * 3.6
+                            speeds.append(speed_kmh)
 
-                        # Estimate power if power meter data is not available
-                        if not hasattr(point, 'power') or point.power is None:
-                            power_estimated = calculate_power(speed_mps, slope, point.elevation)
-                            powers.append(power_estimated)
-                    else:
-                        speeds.append(0)  # No time difference means speed cannot be calculated
+                            if not hasattr(point, 'power') or point.power is None:
+                                power_estimated = calculate_power(speed_mps, slope, point.elevation)
+                                powers.append(power_estimated)
 
-                # Set the current point as the previous point for the next iteration
                 previous_point = point
 
-    surfaces = get_surface_types(filter_close_coordinates(coordinates))
+    if coordinates:
+        surfaces = get_surface_types(filter_close_coordinates(coordinates))
+    else:
+        surfaces = []
+
+    total_distance = round(sum(distances) if distances else 0)
+    elevation_flat_threshold = total_distance * 0.001
+    elevation_low_threshold = total_distance * 0.005
+    elevation_medium_threshold = total_distance * 0.01
+    elevation_high_threshold = total_distance * 0.015
+    elevation_step_threshold = total_distance * 0.05
 
     return {
         "elevations": elevations,
@@ -309,11 +317,17 @@ def parse_gpx_data(gpx_data):
         "cadences": cadences,
         "powers": powers,
         "surfaces": surfaces,
-        "total_distance": sum(distances) if distances else 0,
+        "total_distance": total_distance,
+        "elevation_flat_threshold": elevation_flat_threshold,
+        "elevation_low_threshold": elevation_low_threshold,
+        "elevation_medium_threshold": elevation_medium_threshold,
+        "elevation_high_threshold": elevation_high_threshold,
+        "elevation_step_threshold": elevation_step_threshold,
         "elevation_gain": calculate_elevation_gain(elevations) if elevations else 0,
-        "average_speed": np.mean(speeds) if speeds else 0,
-        "average_heart_rate": np.mean(heart_rates) if heart_rates else 0,
-        "average_cadence": np.mean(cadences) if cadences else 0,
-        "average_power": np.mean(powers) if powers else 0,
+        "avg_speed": np.mean(speeds) if speeds else 25,
+        "avg_heart_rate": np.mean(heart_rates) if heart_rates else 0,
+        "avg_cadence": np.mean(cadences) if cadences else 0,
+        "avg_power": np.mean(powers) if powers else 0,
+        "avg_surface": np.mean(surfaces) if surfaces else 1,
     }
 

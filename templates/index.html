@@ -1,18 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Fixed Gear / Single Speed - Gear ratio calculator</title>
+        <title>Ratio Master</title>
         <meta name="viewport" content="width=465; user-scalable=no">
         <link type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" media="screen">
         <link type="text/css" href="{{ url_for('static', filename='css/jquery-ui.min.css') }}" rel="stylesheet">
         <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
         <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/values.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/index.js') }}"></script>
     </head>
     <body>
         <div id="loading-overlay"><div class="spinner"></div><span data-translate="loading">Loading, please wait, it may take few minutes...</span></div>
+        <div id="results-overlay" title="Analysis Results">
+            <div class="results-content">
+                <p class="results-message">Data is loaded and analyzed!</p>
+                <p class="results-message">Recommended gear ratio is: <span id="recommended-gear-ratio" class="highlighted-text"></span></p>
+                <p class="results-message success-message">Gear ratio is set to recommended!</p>
+                <canvas id="resultsChart"></canvas>
+            </div>
+        </div>
         <header>
             <span>
                 <a href="/" title="Ratio Master"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="RATIO MASTER"></a>
@@ -50,14 +59,24 @@
                     </div>
                 </div>
                 <div id="upload-container">
+                    <!-- GPX File Upload Section -->
                     <h3 style="margin-top: 6px;" data-translate="upload-gpx">Upload GPX files</h3>
-                    <p data-translate="upload-gpx-desc">Upload your GPX files to find gear ratio that suits for your rides!</p>
+                    <p data-translate="upload-gpx-desc">Upload your GPX files to find gear ratio that suits your rides!</p>
                     <span>
                         <input type="file" id="gpxFiles" multiple accept=".gpx" />
                         <label for="gpxFiles" class="upload-label" data-translate="chose-gpx">Choose GPX files</label>
                     </span>
                     <div id="fileList" class="file-list"></div>
-                    <button id="submitGpx" type="button" class="submit-button" data-translate="upload">Upload</button>
+
+<!--                    &lt;!&ndash; Strava Activity Links Section &ndash;&gt;-->
+<!--                    <h3 style="margin-top: 20px;" data-translate="paste-strava-links">Paste Strava Activity Links</h3>-->
+<!--                    <p data-translate="paste-strava-desc">Or paste your Strava activity links below:</p>-->
+<!--                    <span>-->
+<!--                        <textarea id="stravaLinks" placeholder="Paste Strava activity links here, one per line..." class="strava-textarea"></textarea>-->
+<!--                    </span>-->
+
+                    <!-- Submit Button -->
+                    <button id="submitGpx" type="button" class="submit-button" data-translate="upload">Submit</button>
                 </div>
 
                 <!-- <canvas id="wheel" width="480" height="320"></canvas> -->

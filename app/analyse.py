@@ -2,18 +2,18 @@ import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 
-def find_gear_combinations(target_ratio, max_chainring=60, max_sprocket=23):
+def find_gear_combination(target_ratio, max_chainring=60, max_sprocket=23):
     combinations = []
 
-    for chainring in range(28, max_chainring + 1):  # Chainring teeth
-        for sprocket in range(9, max_sprocket + 1):  # Sprocket teeth
+    for chainring in range(28, max_chainring + 1):
+        for sprocket in range(9, max_sprocket + 1):
             ratio = chainring / sprocket
 
-            # Check if the ratio is close to the target ratio (allowing for small tolerance)
-            if abs(ratio - target_ratio) < 0.01:  # Tolerance of 0.01
+            if abs(ratio - target_ratio) < 0.01:
                 combinations.append((chainring, sprocket))
 
-    return combinations
+
+    return combinations[-1]
 
 
 def calculate_gear_ratio_with_wheel_circumference(current_gear_ratio, wheel_circumference = 2111):
@@ -24,13 +24,11 @@ def calculate_gear_ratio_with_wheel_circumference(current_gear_ratio, wheel_circ
     return new_gear_ratio
 
 def calculate_optimal_gear_ratio(data):
-    # Create fuzzy variables
-    speed = ctrl.Antecedent(np.arange(0, 60, 1), 'speed')  # Speed in km/h
-    slope = ctrl.Antecedent(np.arange(-35, 35, 1), 'slope')  # Slope in percent
-    surface = ctrl.Antecedent(np.arange(0, 1, 0.1), 'surface')  # Slope in percent
-    gear_ratio = ctrl.Consequent(np.arange(1, 5, 0.05), 'gear_ratio')  # Gear ratio
+    speed = ctrl.Antecedent(np.arange(0, 60, 1), 'speed')
+    slope = ctrl.Antecedent(np.arange(-35, 35, 1), 'slope')
+    surface = ctrl.Antecedent(np.arange(0, 1, 0.1), 'surface')
+    gear_ratio = ctrl.Consequent(np.arange(1, 5, 0.05), 'gear_ratio')
 
-    # Membership functions for speed
     speed['low'] = fuzz.trimf(speed.universe, [0, 0, 20])
     speed['medium'] = fuzz.trimf(speed.universe, [15, 25, 35])
     speed['high'] = fuzz.trimf(speed.universe, [30, 40, 60])
@@ -39,12 +37,11 @@ def calculate_optimal_gear_ratio(data):
     surface['medium'] = fuzz.trimf(surface.universe, [0.44, 0.77, 0.9])
     surface['good'] = fuzz.trimf(surface.universe, [0.82, 1, 1])
 
-    total_distance = round(data['total_distance'])
-    flat_threshold = total_distance * 0.001
-    low_threshold = total_distance * 0.005
-    medium_threshold = total_distance * 0.01
-    high_threshold = total_distance * 0.015
-    step_threshold = total_distance * 0.05
+    flat_threshold = data['elevation_flat_threshold']
+    low_threshold = data['elevation_low_threshold']
+    medium_threshold = data['elevation_medium_threshold']
+    high_threshold = data['elevation_high_threshold']
+    step_threshold = data['elevation_step_threshold']
 
     elevation_gain = ctrl.Antecedent(np.arange(0, high_threshold + 50, 1), 'elevation_gain')
     elevation_gain['flat'] = fuzz.trimf(elevation_gain.universe, [0, 0, flat_threshold])
@@ -55,21 +52,17 @@ def calculate_optimal_gear_ratio(data):
                                         [medium_threshold, high_threshold, high_threshold + ((step_threshold-high_threshold)/2)])
     elevation_gain['step'] = fuzz.trimf(elevation_gain.universe,
                                         [high_threshold, step_threshold, step_threshold])
-    #
-    # Membership functions for gear ratio
+
     gear_ratio['low'] = fuzz.trimf(gear_ratio.universe, [1, 2, 2.5])
     gear_ratio['medium'] = fuzz.trimf(gear_ratio.universe, [2.3, 2.7, 3.2])
     gear_ratio['high'] = fuzz.trimf(gear_ratio.universe, [3, 3.2, 3.5])
     gear_ratio['track'] = fuzz.trimf(gear_ratio.universe, [3.4, 3.6, 4.2])
-    #
-    # Membership functions for slope
-    slope['negative'] = fuzz.trimf(slope.universe, [-35, -10, 0])
-    slope['flat'] = fuzz.trimf(slope.universe, [-5, 0, 5])
-    slope['positive'] = fuzz.trimf(slope.universe, [0, 10, 35])
-    #
-    # Define the fuzzy rules
+
+    slope['negative'] = fuzz.trimf(slope.universe, [-35, -10, -5])
+    slope['flat'] = fuzz.trimf(slope.universe, [-10, 0, 10])
+    slope['positive'] = fuzz.trimf(slope.universe, [5, 10, 35])
+
     rules = [
-        # Speed and Elevation Gain
         ctrl.Rule(elevation_gain['flat'], gear_ratio['track']),
         ctrl.Rule(elevation_gain['low'], gear_ratio['high']),
         ctrl.Rule(elevation_gain['medium'], gear_ratio['medium']),
@@ -80,7 +73,7 @@ def calculate_optimal_gear_ratio(data):
         ctrl.Rule(speed['medium'], gear_ratio['medium']),
         ctrl.Rule(speed['high'], gear_ratio['high']),
     ]
-    # Calculate average slope as a percentage
+
     avg_slope = np.mean(data["slopes"])
     slope_rules = [
         ctrl.Rule(slope['negative'], gear_ratio['high']),
@@ -89,12 +82,7 @@ def calculate_optimal_gear_ratio(data):
     ]
     if avg_slope > 1 or avg_slope < -1:
         rules+=slope_rules
-    #
-    # Calculate average surface
-    avg_surface = 1
-    if data["surfaces"] and len(data["surfaces"]):
-        avg_surface = np.mean(data["surfaces"])
-    #
+
     surface_rules = [
         ctrl.Rule(surface['bad'], gear_ratio['low']),
         ctrl.Rule(surface['medium'], gear_ratio['medium']),
@@ -102,19 +90,15 @@ def calculate_optimal_gear_ratio(data):
     ]
     rules += surface_rules
 
-    # Create the control system and simulation
     gear_ratio_ctrl = ctrl.ControlSystem(rules)
     gear_ratio_simulation = ctrl.ControlSystemSimulation(gear_ratio_ctrl)
 
-    # Input values
-    gear_ratio_simulation.input['speed'] = data['average_speed']
+    gear_ratio_simulation.input['speed'] = data['avg_speed']
     gear_ratio_simulation.input['elevation_gain'] = data['elevation_gain']
+    gear_ratio_simulation.input['surface'] = data["avg_surface"]
     if avg_slope > 1 or avg_slope < -1:
         gear_ratio_simulation.input['slope'] = avg_slope
-    if data["surfaces"] and len(data["surfaces"]):
-        gear_ratio_simulation.input['surface'] = avg_surface
 
-    # Compute the result
     gear_ratio_simulation.compute()
 
     return gear_ratio_simulation.output['gear_ratio']
