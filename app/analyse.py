@@ -12,7 +12,7 @@ load_dotenv()
 STRAVA_API_KEY = os.getenv('STRAVA_API_KEY')
 
 
-def find_gear_combination(target_ratio, max_chainring=60, max_sprocket=23, threshold=0.01):
+def find_gear_combination(target_ratio, max_chainring=60, max_sprocket=28, threshold=0.01):
     combinations = []
 
     for chainring in range(28, max_chainring + 1):
