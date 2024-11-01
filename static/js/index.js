@@ -110,11 +110,11 @@ function calculate() {
 	let sprocketT = parseInt($('#sprocket').val());
 	let unit = $("input[name='unit']:checked").val();
 	const ratio = Math.round(chainringT/sprocketT*100)/100;
-	const tire = $('#tire').val();
-	const tire_inches = tire / (math.pi * 25.4)
+	const tire = Number($('#tire').val());
+	const tire_inches = tire / (Math.PI * 25.4);
 
 	$('#ratio').html(ratio);
-	$('$gear-inches').html(ratio * tire_inches);
+	$('#gear-inches').html(Math.ceil(ratio * tire_inches));
 
 	let thisFactor = 1;
 	let thisUnit = '';
