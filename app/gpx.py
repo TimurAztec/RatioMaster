@@ -38,6 +38,21 @@ def calculate_power(speed, slope, altitude, total_weight=75, drag_coefficient=0.
 
     return total_power
 
+def filter_elevations(elevations):
+    if not elevations:
+        return []
+
+    changes = np.diff(elevations)
+    dynamic_tolerance = np.std(changes) * 3.33
+
+    filtered = [elevations[0]]
+
+    for i in range(1, len(elevations)):
+        if abs(elevations[i] - filtered[-1]) > dynamic_tolerance:
+            filtered.append(elevations[i])
+
+    return filtered
+
 def calculate_elevation_gain(elevations):
     total_gain = 0
     previous_elevation = elevations[0]
@@ -242,6 +257,7 @@ def parse_gpx_data(gpx_data):
     heart_rates = []
     cadences = []
     powers = []
+    estimated_powers = []
     coordinates = []
 
     previous_point = None
@@ -290,10 +306,6 @@ def parse_gpx_data(gpx_data):
                             speed_kmh = speed_mps * 3.6
                             speeds.append(speed_kmh)
 
-                            if not hasattr(point, 'power') or point.power is None:
-                                power_estimated = calculate_power(speed_mps, slope, point.elevation)
-                                powers.append(power_estimated)
-
                 previous_point = point
 
     if coordinates:
@@ -323,7 +335,7 @@ def parse_gpx_data(gpx_data):
         "elevation_medium_threshold": elevation_medium_threshold,
         "elevation_high_threshold": elevation_high_threshold,
         "elevation_step_threshold": elevation_step_threshold,
-        "elevation_gain": calculate_elevation_gain(elevations) if elevations else 0,
+        "elevation_gain": calculate_elevation_gain(filter_elevations(elevations)) if elevations else 0,
         "avg_speed": np.mean(speeds) if speeds else 25,
         "avg_heart_rate": np.mean(heart_rates) if heart_rates else 0,
         "avg_cadence": np.mean(cadences) if cadences else 0,

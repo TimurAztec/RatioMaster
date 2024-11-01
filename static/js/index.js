@@ -18,7 +18,7 @@ $(document).ready(function() {
 
 	$("#results-overlay").dialog({
 		width: 600,
-		height: 800,
+		height: 600,
 		modal: true,
 		autoOpen: false,
 		draggable: false,
@@ -90,6 +90,7 @@ $(document).ready(function() {
 			},
 			error: function(xhr, status, error) {
 				alert('Error uploading files: ' + error);
+				$('#loading-overlay').fadeOut();
 			}
 		});
 	});
@@ -215,8 +216,8 @@ function updateResultsChart(data) {
     const dataValues = [
         normalizeValue(data.avg_cadence, 0, 140),
         normalizeValue(data.avg_heart_rate, 40, 200),
-        normalizeValue(data.avg_power, 0, 1000),
-        normalizeValue(data.avg_speed, 0, 70),
+        normalizeValue(data.avg_power, 0, data.avg_power > 500 ? data.avg_power : 500),
+        normalizeValue(data.avg_speed, 0, data.avg_speed_threshold),
         normalizeValue(data.avg_surface, 0, 1),
         normalizeValue(data.elevation_gain, 0, data.elevation_threshold)
     ];
@@ -246,6 +247,8 @@ function updateResultsChart(data) {
 			options: { 
 				scales: {
 					r: {
+                        min: 0,
+                        max: 1,
 					  ticks:{
 						display: false
 					  }
@@ -253,17 +256,17 @@ function updateResultsChart(data) {
 				  },
 				scale: {
 					ticks: {
-						display: false, // Hides numerical values
+						display: false,
                         beginAtZero: true
 					},
                     grid: {
-                        display: false // Hides grid lines
+                        display: false
                     },
                     angleLines: {
-                        display: false // Hides angle lines
+                        display: false
                     },
                     pointLabels: {
-                        display: false // Hides the axis labels
+                        display: false
                     }
 				}
 			}
@@ -274,7 +277,7 @@ function updateResultsChart(data) {
 function normalizeValue(value, min, max) {
     let returnValue = value ? (value - min) / (max - min) : 0;
 	if (returnValue > 1) returnValue = 1;
-    return returnValue;
+    return value > 1 ? returnValue : value;
 }
 
 // function draw(){
