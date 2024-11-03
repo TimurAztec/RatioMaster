@@ -54,11 +54,19 @@ $(document).ready(() => {
         let option = $('<option></option>').val(i).text(`${i} t`);
         $('#sprocket').append(option);
     }
+    $('#sprocket').val("17").change();
 
     $('#chainring').empty();
     for (i = 28 ; i <= 100 ; i++) {
         let option = $('<option></option>').val(i).text(`${i} t`);
         $('#chainring').append(option);
     }
+    $('#chainring').val("49").change();
+
+    // $('#cranks-length').empty();
+    // for (i = 28 ; i <= 100 ; i++) {
+    //     let option = $('<option></option>').val(i).text(`${i} t`);
+    //     $('#cranks-length').append(option);
+    // }
 
 });

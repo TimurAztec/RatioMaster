@@ -25,10 +25,13 @@ def find_gear_combination(target_ratio, max_chainring=60, max_sprocket=28, thres
     return combinations[-1] if len(combinations) else find_gear_combination(target_ratio, threshold=threshold+0.01)
 
 
-def calculate_gear_ratio_with_wheel_circumference(current_gear_ratio, wheel_circumference=2111):
-    standard_wheel_circumference = 2111
+def calculate_gear_ratio_with_adjustments(current_gear_ratio, wheel_circumference=2111, crank_length=170):
+    standard_wheel_circumference = 2111  # in mm
+    standard_crank_length = 170  # in mm, typical crank length
     distance_per_pedal_revolution = current_gear_ratio * standard_wheel_circumference
-    new_gear_ratio = distance_per_pedal_revolution / wheel_circumference
+    adjusted_distance_per_pedal_revolution = distance_per_pedal_revolution * (crank_length / standard_crank_length)
+
+    new_gear_ratio = adjusted_distance_per_pedal_revolution / wheel_circumference
 
     return new_gear_ratio
 
@@ -52,7 +55,7 @@ async def analyze_data(input_data):
             data["avg_estimated_power"] = estimate_average_power(data)
             return {
                 "data": data,
-                "gear_ratio": calculate_gear_ratio_with_wheel_circumference(calculate_optimal_gear_ratio(data),
+                "gear_ratio": calculate_gear_ratio_with_adjustments(calculate_optimal_gear_ratio(data),
                                                                             input_data["wheel_circumference"])
             }
         return None
@@ -79,7 +82,7 @@ async def analyze_data(input_data):
     for link in input_data["links"]:
         try:
             gpx_data = await fetch_gpx_from_strava(link)
-            result = calculate_gear_ratio_with_wheel_circumference(calculate_optimal_gear_ratio(gpx_data),
+            result = calculate_gear_ratio_with_adjustments(calculate_optimal_gear_ratio(gpx_data),
                                                                    input_data["wheel_circumference"])
             data.append(result)
         except Exception as e:
