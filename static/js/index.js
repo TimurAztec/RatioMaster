@@ -83,6 +83,7 @@ $(document).ready(function() {
 				$('#loading-overlay').fadeOut();
 				$("#results-overlay").dialog("open");
 				updateResultsChart(response.data);
+				$("#gear-ratio-explanation").text(response.explanation || "");
 				$("#recommended-gear-ratio").text((response.optimal_gear_ratio[0]/response.optimal_gear_ratio[1]).toFixed(2));
 				$('#chainring').val(response.optimal_gear_ratio[0]);
 				$('#sprocket').val(response.optimal_gear_ratio[1]);
