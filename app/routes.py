@@ -10,7 +10,7 @@ def render_index():
         return "ERROR: {}".format(str(e))
 
 
-@app.route('/upload_gpx', methods=['POST'])
+@app.route('/upload', methods=['POST'])
 async def upload_gpx_files():
     try:
         if 'files' not in request.files and 'links' not in request.form:

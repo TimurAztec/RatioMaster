@@ -2,6 +2,9 @@ let translations = []
 let resultsChart;
 
 $(document).ready(function() {
+    const fileInput = $('#files');
+    const fileList = $('#fileList');
+    const dataTransfer = new DataTransfer();
 	$('#loading-overlay').fadeOut();
 	calculate();
 	loadTranslations('en');
@@ -58,23 +61,54 @@ $(document).ready(function() {
         $("#results-overlay").dialog("close");
     });
 
-	$('#gpxFiles').on('change', function () {
-		const files = $(this).prop('files');
-		const fileList = $('#fileList');
-		fileList.empty();
+	function updateFileList() {
+        fileList.empty();
+        if (dataTransfer.files.length) {
+            $.each(dataTransfer.files, function (index, file) {
+                const fileItem = $(`<div>${file.name} <span class="remove-file" data-index="${index}">✖</span></div>`);
+                fileList.append(fileItem);
+            });
+        } else {
+            fileList.append('<div>No files selected.</div>');
+        }
+    }
 
-		if (files.length) {
-			$.each(files, function (index, file) {
-				fileList.append(`<div>${file.name}</div>`);
-			});
-		} else {
-			fileList.append('<div>No files selected.</div>');
-		}
-	});
+    fileInput.on('change', function () {
+        const files = Array.from(fileInput.prop('files'));
+        files.forEach(file => dataTransfer.items.add(file));
+        fileInput.prop('files', dataTransfer.files);
+        updateFileList();
+    });
 
-	$('#submitGpx').on('click', function() {
+    $('#drop-area')
+        .on('dragover', function (e) {
+            e.preventDefault();
+            $(this).addClass('drag-over');
+        })
+        .on('dragleave', function () {
+            $(this).removeClass('drag-over');
+        })
+        .on('drop', function (e) {
+            e.preventDefault();
+            $(this).removeClass('drag-over');
+            const droppedFiles = Array.from(e.originalEvent.dataTransfer.files);
+            droppedFiles.forEach(file => dataTransfer.items.add(file));
+            fileInput.prop('files', dataTransfer.files);
+            updateFileList();
+        });
+
+    fileList.on('click', '.remove-file', function () {
+        const index = $(this).data('index');
+        dataTransfer.items.remove(index);
+        fileInput.prop('files', dataTransfer.files);
+        updateFileList();
+    });
+
+    updateFileList();
+
+	$('#submit').on('click', function() {
 		const formData = new FormData();
-		const files = $('#gpxFiles').prop('files');
+		const files = $('#files').prop('files');
 //		const stravaLinks = $('#stravaLinks').val().trim();
 
 		if (files.length === 0 && stravaLinks.length === 0) {
@@ -92,7 +126,7 @@ $(document).ready(function() {
 		formData.append('wheel_circumference', $('#tire').val());
 		formData.append('lang', $('#language-selector').val());
 		$.ajax({
-			url: '/upload_gpx',
+			url: '/upload',
 			type: 'POST',
 			data: formData,
 			processData: false,

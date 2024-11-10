@@ -67,13 +67,25 @@ input[type="file"] {
     transform: scale(1.05);
 }
 
-.file-list {
-    margin: 10px 0;
-    font-size: 14px;
-    color: #555;
-    padding: 10px;
-    border: 2px dashed #e07b39;
-    background-color: #fff7e3;
+.drop-area {
+    border: 2px dashed #cccccc;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.file-list div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.file-list div .remove-file {
+    cursor: pointer;
+    color: #ff0000;
+    margin-left: 10px;
 }
 
 .strava-textarea {

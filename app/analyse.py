@@ -5,7 +5,7 @@ from strava2gpx import strava2gpx
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
 from app.fuzzy import calculate_optimal_gear_ratio, estimate_speed, estimate_average_power
-from app.gpx import load_gpx, parse_gpx_data
+from app.gps import parse_gpx_data, parse_tcx_data
 from dotenv import load_dotenv
 import aiofiles
 from openai import AsyncOpenAI
@@ -103,7 +103,10 @@ async def analyze_data(input_data):
 
     def process_file(file):
         if file.filename.endswith('.gpx'):
-            data = parse_gpx_data(load_gpx(file))
+            data = parse_gpx_data(file)
+        if file.filename.endswith('.tcx'):
+            data = parse_tcx_data(file)
+        if data:
             data["avg_estimated_speed"] = estimate_speed(data, mode='estimate') if not data["avg_speed"] else 0
             data["speed_threshold"] = estimate_speed(data, mode='threshold')
             data["avg_estimated_power"] = estimate_average_power(data) if not data["avg_power"] and data["avg_speed"] else 0
@@ -143,7 +146,7 @@ async def analyze_data(input_data):
             print(f"Error processing link {link}: {e}")
 
     avg_gear_ratio = np.mean(np.array([obj["gear_ratio"] for obj in data]))
-    avg_speed = np.array([obj["data"]["avg_speed"] for obj in data])
+    avg_speeds = np.array([obj["data"]["avg_speed"] for obj in data])
     avg_speed_thresholds = np.array([obj["data"]["speed_threshold"] for obj in data])
     avg_heart_rates = np.array([obj["data"]["avg_heart_rate"] for obj in data])
     avg_cadences = np.array([obj["data"]["avg_cadence"] for obj in data])
@@ -161,13 +164,13 @@ async def analyze_data(input_data):
             else obj["data"]["elevation_step_threshold"]
         )
         elevation_thresholds.append(obj_elevation_threshold)
-
-    avg_power = np.mean(avg_powers)
+    avg_speed = np.mean(avg_speeds)
+    avg_power = np.mean(avg_powers) if len(avg_powers) else 0
     if avg_power == 0 and avg_speed > 0:
         avg_power = np.mean(avg_estimated_powers)
 
     avg_data = {
-        "avg_speed": np.mean(avg_speed) if avg_speed > 0 else np.mean(avg_estimated_speeds),
+        "avg_speed": avg_speed if avg_speed > 0 else np.mean(avg_estimated_speeds),
         "avg_speed_threshold": np.mean(avg_speed_thresholds),
         "avg_heart_rate": np.mean(avg_heart_rates),
         "avg_cadence": np.mean(avg_cadences),

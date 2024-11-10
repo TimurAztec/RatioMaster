@@ -62,24 +62,15 @@
                     </div>
                 </div>
                 <div id="upload-container">
-                    <!-- GPX File Upload Section -->
-                    <h3 style="margin-top: 6px;" data-translate="upload-gpx">Upload GPX files</h3>
-                    <p data-translate="upload-gpx-desc">Upload your GPX files to find gear ratio that suits your rides!</p>
-                    <span>
-                        <input type="file" id="gpxFiles" multiple accept=".gpx" />
-                        <label for="gpxFiles" class="upload-label" data-translate="chose-gpx">Choose GPX files</label>
-                    </span>
+                    <h3 style="margin-top: 6px;" data-translate="upload-gpx">Upload GPX/TCX files</h3>
+                    <p data-translate="upload-gpx-desc">Upload your GPX or TCX files to find gear ratio that suits your rides!</p>
+                    <div id="drop-area" class="drop-area">
+                        <span data-translate="drag-drop">Drag and drop files here, or</span>
+                        <label for="files" class="upload-label" data-translate="choose-gpx">Choose files</label>
+                        <input type="file" id="files" multiple accept=".gpx, .tcx" style="display:none;">
+                    </div>
                     <div id="fileList" class="file-list"></div>
-
-<!--                    &lt;!&ndash; Strava Activity Links Section &ndash;&gt;-->
-<!--                    <h3 style="margin-top: 20px;" data-translate="paste-strava-links">Paste Strava Activity Links</h3>-->
-<!--                    <p data-translate="paste-strava-desc">Or paste your Strava activity links below:</p>-->
-<!--                    <span>-->
-<!--                        <textarea id="stravaLinks" placeholder="Paste Strava activity links here, one per line..." class="strava-textarea"></textarea>-->
-<!--                    </span>-->
-
-                    <!-- Submit Button -->
-                    <button id="submitGpx" type="button" class="submit-button" data-translate="upload">Submit</button>
+                    <button id="submit" type="button" class="submit-button" data-translate="upload">Submit</button>
                 </div>
 
                 <!-- <canvas id="wheel" width="480" height="320"></canvas> -->

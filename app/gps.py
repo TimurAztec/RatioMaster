@@ -2,9 +2,11 @@ import gpxpy
 import requests
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import xml.etree.ElementTree as ET
+from datetime import datetime
 
-def load_gpx(file):
-    return gpxpy.parse(file)
+def parse_iso8601(time_str):
+    return datetime.fromisoformat(time_str.replace("Z", "+00:00"))
 
 def calculate_distance(coord1, coord2):
     R = 6371000
@@ -205,7 +207,6 @@ def process_element(element, coordinates, max_distance):
 
     return None
 
-
 def get_surface_types(coordinates, max_distance=100, max_workers=4):
     if not coordinates:
         return []
@@ -249,7 +250,8 @@ def get_surface_types(coordinates, max_distance=100, max_workers=4):
 
     return results
 
-def parse_gpx_data(gpx_data):
+def parse_gpx_data(file):
+    gpx_data = gpxpy.parse(file)
     elevations = []
     distances = []
     slopes = []
@@ -311,6 +313,113 @@ def parse_gpx_data(gpx_data):
         surfaces = get_surface_types(filter_close_coordinates(coordinates))
     else:
         surfaces = []
+
+    total_distance = round(sum(distances) if distances else 0)
+    elevation_flat_threshold = total_distance * 0.001
+    elevation_low_threshold = total_distance * 0.005
+    elevation_medium_threshold = total_distance * 0.01
+    elevation_high_threshold = total_distance * 0.015
+    elevation_step_threshold = total_distance * 0.05
+
+    return {
+        "elevations": elevations,
+        "distances": distances,
+        "slopes": slopes,
+        "speeds": speeds,
+        "heart_rates": heart_rates,
+        "cadences": cadences,
+        "powers": powers,
+        "surfaces": surfaces,
+        "total_distance": total_distance,
+        "elevation_flat_threshold": elevation_flat_threshold,
+        "elevation_low_threshold": elevation_low_threshold,
+        "elevation_medium_threshold": elevation_medium_threshold,
+        "elevation_high_threshold": elevation_high_threshold,
+        "elevation_step_threshold": elevation_step_threshold,
+        "elevation_gain": calculate_elevation_gain(filter_elevations(elevations)) if elevations else 0,
+        "avg_speed": np.mean(speeds) if speeds else 0,
+        "avg_heart_rate": np.mean(heart_rates) if heart_rates else 0,
+        "avg_cadence": np.mean(cadences) if cadences else 0,
+        "avg_power": np.mean(powers) if powers else 0,
+        "avg_surface": np.mean(surfaces) if surfaces else 1,
+    }
+
+def parse_tcx_data(file):
+    namespaces = {'tcx': 'http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2'}
+    tree = ET.parse(file)
+    root = tree.getroot()
+
+    elevations = []
+    distances = []
+    slopes = []
+    speeds = []
+    heart_rates = []
+    cadences = []
+    powers = []
+    coordinates = []
+
+    previous_lat, previous_lon, previous_elev, previous_time = None, None, None, None
+
+    for trackpoint in root.findall('.//tcx:Trackpoint', namespaces):
+        elevation = trackpoint.find('tcx:AltitudeMeters', namespaces)
+        if elevation is not None:
+            elevation_value = float(elevation.text)
+            elevations.append(elevation_value)
+        else:
+            elevation_value = None
+
+        lat_elem = trackpoint.find('tcx:Position/tcx:LatitudeDegrees', namespaces)
+        lon_elem = trackpoint.find('tcx:Position/tcx:LongitudeDegrees', namespaces)
+        if lat_elem is not None and lon_elem is not None:
+            latitude, longitude = float(lat_elem.text), float(lon_elem.text)
+            coordinates.append((latitude, longitude))
+        else:
+            latitude, longitude = None, None
+
+        speed_elem = trackpoint.find('tcx:Extensions/tcx:TPX/tcx:Speed', namespaces)
+        if speed_elem is not None:
+            speeds.append(float(speed_elem.text))
+
+        hr_elem = trackpoint.find('tcx:HeartRateBpm/tcx:Value', namespaces)
+        if hr_elem is not None:
+            heart_rates.append(int(hr_elem.text))
+
+        cadence_elem = trackpoint.find('tcx:Cadence', namespaces)
+        if cadence_elem is not None:
+            cadences.append(int(cadence_elem.text))
+
+        power_elem = trackpoint.find('tcx:Extensions/tcx:TPX/tcx:Watts', namespaces)
+        if power_elem is not None:
+            powers.append(float(power_elem.text))
+
+        time_elem = trackpoint.find('tcx:Time', namespaces)
+        if time_elem is not None:
+            current_time = parse_iso8601(time_elem.text)
+        else:
+            current_time = None
+
+        if previous_lat is not None and previous_lon is not None:
+            distance = calculate_distance((previous_lat, previous_lon), (latitude, longitude))
+            distances.append(distance)
+
+            if previous_elev is not None and elevation_value is not None:
+                elevation_change = elevation_value - previous_elev
+                if distance > 0:
+                    slope = (elevation_change / distance) * 100
+                    slopes.append(slope)
+
+            if previous_time is not None and current_time is not None:
+                time_difference = (current_time - previous_time).total_seconds()
+                if time_difference > 0:
+                    speed_mps = distance / time_difference
+                    speed_kmh = speed_mps * 3.6
+                    speeds.append(speed_kmh)
+
+        previous_lat, previous_lon = latitude, longitude
+        previous_elev = elevation_value
+        previous_time = current_time
+
+    surfaces = get_surface_types(filter_close_coordinates(coordinates)) if coordinates else []
 
     total_distance = round(sum(distances) if distances else 0)
     elevation_flat_threshold = total_distance * 0.001
