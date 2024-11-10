@@ -49,10 +49,11 @@ def extract_activity_id(link):
 
 async def get_gear_ratio_explanation(avg_data, optimal_gear_ratio, wheel_circumference=2111, lang="en"):
     prompt = (
-        f"Explain the rationale behind selecting a gear ratio of {round(optimal_gear_ratio, 2)} based on the following data:\n"
-        f"- Wheel circumference: {round(wheel_circumference)} mm\n"
-        f"- Surface quality: {avg_data['avg_surface']} (scale 0 to 1), Elevation gain: {avg_data['elevation_gain']} meters\n\n"
-        f"- Repeat in {lang} language \n"
+        f"Explain the rationale for selecting a gear ratio of {round(optimal_gear_ratio, 2)} based on the following data:\n"
+        f"- Wheel circumference: {round(wheel_circumference)} \n"
+        f"- Surface quality: {round(avg_data['avg_surface'], 2)} (scale 0 to 1)\n"
+        f"- Elevation gain: {avg_data['elevation_gain']} meters\n\n"
+        f"- Response should be in {lang} language.\n"
     )
 
     if avg_data.get('avg_power') and avg_data['avg_power'] > 0:
@@ -71,11 +72,17 @@ async def get_gear_ratio_explanation(avg_data, optimal_gear_ratio, wheel_circumf
         prompt += f"- Cadence: {round(avg_data['avg_cadence'])} rpm\n"
 
     prompt += (
-        "Provide a clear, concise explanation of how each of these factors influenced the gear ratio decision. "
-        "Make an educated guess about the bike type and riding conditions based on this data. "
-        "Explain as if you have chosen the gear ratio. "
-        "Do not include any numerical values or repeat the data. "
-        "Focus solely on the reasoning behind the selection, and disregard any missing or empty data points."
+            "Provide a brief, clear and concise explanation of how these factors influenced the gear ratio choice. "
+            "Make an educated suggestion of the bike type and riding conditions based on the data, assuming all bikes are single-speed/fixed-gear. "
+            "Consider the following: \n"
+            "- If surface quality is above 0.95 and the gear ratio exceeds 3.2, it suggests a track bike ride. \n"
+            "- If surface quality is above 0.77 and the gear ratio exceeds 2.5, it indicates a single-speed road bike ride. \n"
+            "- If surface quality is below 0.77 it likely means off-road riding. \n"
+            "- If surface quality is close to or below 0.5, it likely indicates a single-speed MTB or gravel bike ride. \n"
+            "- Match the wheel circumference with a wheel size chart to further determine the bike type. \n"
+            "- Wheel sizes 29\", 27.5\" and 26\" indicate that it's MTB bike. Wheel circumference above 2300 usually indicates 29\" MTB bike. \n"
+            "Explain your reasoning as if you made the gear ratio decision. "
+            "Do not include any numerical data or include missing values. Focus entirely on the reasoning behind your selection. "
     )
 
     try:

@@ -6,7 +6,7 @@ def create_surface_fuzzy():
     surface = ctrl.Antecedent(np.arange(0, 1, 0.01), 'surface')
     surface['bad'] = fuzz.trimf(surface.universe, [0, 0, 0.66])
     surface['medium'] = fuzz.trimf(surface.universe, [0.44, 0.77, 0.9])
-    surface['good'] = fuzz.trimf(surface.universe, [0.82, 0.96, 1])
+    surface['good'] = fuzz.trimf(surface.universe, [0.77, 0.9, 1])
     surface['perfect'] = fuzz.trimf(surface.universe, [0.95, 1, 1])
     return surface
 
@@ -90,35 +90,15 @@ def calculate_optimal_gear_ratio(data):
     rules = []
 
     speed_rules = [
-        ctrl.Rule(speed['low'] & elevation_gain['flat'] & surface['good'], gear_ratio['medium']),
-        ctrl.Rule(speed['low'] & elevation_gain['flat'] & surface['perfect'], gear_ratio['medium']),
-        ctrl.Rule(speed['low'] & elevation_gain['low'], gear_ratio['low']),
-        ctrl.Rule(speed['low'] & elevation_gain['medium'], gear_ratio['low']),
-        ctrl.Rule(speed['low'] & elevation_gain['high'] & surface['bad'], gear_ratio['low']),
-        ctrl.Rule(speed['low'] & elevation_gain['step'] & surface['bad'], gear_ratio['low']),
+        ctrl.Rule(speed['low'] & elevation_gain['flat'] & surface['good'], gear_ratio['high']),
+        ctrl.Rule(speed['low'] & elevation_gain['flat'] & surface['perfect'], gear_ratio['high']),
+        ctrl.Rule(speed['low'] & elevation_gain['flat'], gear_ratio['medium']),
+        ctrl.Rule(speed['low'] & elevation_gain['low'], gear_ratio['medium']),
 
         ctrl.Rule(speed['medium'] & elevation_gain['flat'] & surface['good'], gear_ratio['high']),
-        ctrl.Rule(speed['medium'] & elevation_gain['flat'] & surface['perfect'], gear_ratio['high']),
-        ctrl.Rule(speed['medium'] & elevation_gain['medium'] & surface['medium'], gear_ratio['medium']),
-        ctrl.Rule(speed['medium'] & elevation_gain['high'] & surface['good'], gear_ratio['medium']),
-        ctrl.Rule(speed['medium'] & elevation_gain['high'] & surface['bad'], gear_ratio['low']),
-
-        ctrl.Rule(speed['high'] & elevation_gain['flat'] & surface['good'], gear_ratio['high']),
-        ctrl.Rule(speed['high'] & elevation_gain['flat'] & surface['perfect'], gear_ratio['track']),
-        ctrl.Rule(speed['high'] & elevation_gain['low'] & surface['good'], gear_ratio['medium']),
-        ctrl.Rule(speed['high'] & elevation_gain['low'] & surface['perfect'], gear_ratio['high']),
-        ctrl.Rule(speed['high'] & surface['bad'], gear_ratio['medium']),
-        ctrl.Rule(speed['medium'] & surface['bad'], gear_ratio['low']),
-        ctrl.Rule(speed['high'] & elevation_gain['high'] & surface['good'], gear_ratio['high']),
-        ctrl.Rule(speed['high'] & elevation_gain['high'] & surface['bad'], gear_ratio['low']),
-
-        ctrl.Rule(speed['high'] & elevation_gain['high'] & surface['bad'], gear_ratio['medium']),
-        ctrl.Rule(speed['medium'] & elevation_gain['step'] & surface['bad'], gear_ratio['low']),
-        ctrl.Rule(speed['low'] & elevation_gain['high'] & surface['bad'], gear_ratio['low']),
-
-        ctrl.Rule(speed['low'] & elevation_gain['step'] & surface['bad'], gear_ratio['low']),
-        ctrl.Rule(speed['medium'] & elevation_gain['high'] & surface['bad'], gear_ratio['medium']),
-        ctrl.Rule(speed['high'] & elevation_gain['step'] & surface['bad'], gear_ratio['high'])
+        ctrl.Rule(speed['medium'] & elevation_gain['flat'] & surface['perfect'], gear_ratio['track']),
+        ctrl.Rule(speed['medium'] & elevation_gain['flat'], gear_ratio['medium']),
+        ctrl.Rule(speed['medium'] & elevation_gain['low'], gear_ratio['medium']),
     ]
     rules+=speed_rules
 
@@ -130,6 +110,15 @@ def calculate_optimal_gear_ratio(data):
     ]
     if avg_slope > 1 or avg_slope < -1:
         rules+=slope_rules
+
+    elevation_gain_rules = [
+        ctrl.Rule(elevation_gain['flat'], gear_ratio['track']),
+        ctrl.Rule(elevation_gain['low'], gear_ratio['high']),
+        ctrl.Rule(elevation_gain['medium'], gear_ratio['medium']),
+        ctrl.Rule(elevation_gain['high'], gear_ratio['low']),
+        ctrl.Rule(elevation_gain['step'], gear_ratio['low']),
+    ]
+    rules += elevation_gain_rules
 
     surface_rules = [
         ctrl.Rule(surface['bad'], gear_ratio['low']),

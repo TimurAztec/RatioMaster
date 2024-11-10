@@ -23,6 +23,11 @@
                 <canvas id="resultsChart"></canvas>
             </div>
         </div>
+        <div id="about-dialog" title="About Ratio Master">
+            <p><strong>Ratio Master</strong> is a web application that helps cyclists calculate the optimal gear ratios for their rides. By uploading GPX/TCX files, the app analyzes the route's data and suggests the best gear ratio based on your riding conditions.</p>
+            <p>Developed by <strong>Timur Ptashchenko</strong></p>
+            <p><a class="clickable" href="https://github.com/TimurAztec">GitHub</a></p>
+        </div>
         <header>
             <span>
                 <a href="/" title="Ratio Master"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="RATIO MASTER"></a>
@@ -35,7 +40,7 @@
                     </select>
                 </label>            
                 <span class="separator"></span>
-                <span class="clickable">About</span>
+                <span class="clickable" id="about-btn">About</span>
             </span>
         </header>
         <main>

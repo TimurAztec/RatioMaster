@@ -276,3 +276,12 @@ input[type="file"] {
 .ui-dialog-titlebar-close:hover {
     background-color: darkred !important;
 }
+
+#about-dialog p {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+#about-dialog strong {
+    font-weight: bold;
+}
