@@ -257,7 +257,6 @@ def parse_gpx_data(gpx_data):
     heart_rates = []
     cadences = []
     powers = []
-    estimated_powers = []
     coordinates = []
 
     previous_point = None
@@ -336,7 +335,7 @@ def parse_gpx_data(gpx_data):
         "elevation_high_threshold": elevation_high_threshold,
         "elevation_step_threshold": elevation_step_threshold,
         "elevation_gain": calculate_elevation_gain(filter_elevations(elevations)) if elevations else 0,
-        "avg_speed": np.mean(speeds) if speeds else 25,
+        "avg_speed": np.mean(speeds) if speeds else 0,
         "avg_heart_rate": np.mean(heart_rates) if heart_rates else 0,
         "avg_cadence": np.mean(cadences) if cadences else 0,
         "avg_power": np.mean(powers) if powers else 0,

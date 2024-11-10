@@ -4,7 +4,7 @@ import openai
 from strava2gpx import strava2gpx
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
-from app.fuzzy import calculate_optimal_gear_ratio, estimate_speed_threshold, estimate_average_power
+from app.fuzzy import calculate_optimal_gear_ratio, estimate_speed, estimate_average_power
 from app.gpx import load_gpx, parse_gpx_data
 from dotenv import load_dotenv
 import aiofiles
@@ -47,14 +47,22 @@ def extract_activity_id(link):
         return match.group(1)
     raise ValueError("Invalid Strava link format")
 
-async def get_gear_ratio_explanation(avg_data, optimal_gear_ratio, wheel_circumference=2111):
+async def get_gear_ratio_explanation(avg_data, optimal_gear_ratio, wheel_circumference=2111, lang="en"):
     prompt = (
         f"Explain the rationale behind selecting a gear ratio of {round(optimal_gear_ratio, 2)} based on the following data:\n"
         f"- Wheel circumference: {round(wheel_circumference)} mm\n"
-        f"- Speed: {round(avg_data['avg_speed'], 1)} km/h\n"
-        f"- Power: {round(avg_data['avg_power'])} watts\n"
         f"- Surface quality: {avg_data['avg_surface']} (scale 0 to 1), Elevation gain: {avg_data['elevation_gain']} meters\n\n"
+        f"- Repeat in {lang} language \n"
     )
+
+    if avg_data.get('avg_power') and avg_data['avg_power'] > 0:
+        prompt += f"- Power: {round(avg_data['avg_power'])} watts\n"
+
+    if avg_data.get('avg_speed') and avg_data['avg_speed'] > 0:
+        prompt += f"- Speed: {round(avg_data['avg_speed'], 1)} km/h\n"
+
+    if avg_data.get('avg_estimated_speed') and avg_data['avg_estimated_speed'] > 0:
+        prompt += f"- Suggested avg speed: {round(avg_data['avg_estimated_speed'], 1)} km/h\n"
 
     if avg_data.get('avg_heart_rate') and avg_data['avg_heart_rate'] > 0:
         prompt += f"- Heart rate: {round(avg_data['avg_heart_rate'])} bpm\n"
@@ -78,7 +86,7 @@ async def get_gear_ratio_explanation(avg_data, optimal_gear_ratio, wheel_circumf
                 {"role": "user", "content": prompt}
             ],
             max_tokens=200,
-            temperature=0.8
+            temperature=0.2
         )
         return response.choices[0].message.content
     except openai._exceptions.RateLimitError:
@@ -96,8 +104,9 @@ async def analyze_data(input_data):
     def process_file(file):
         if file.filename.endswith('.gpx'):
             data = parse_gpx_data(load_gpx(file))
-            data["speed_threshold"] = estimate_speed_threshold(data)
-            data["avg_estimated_power"] = estimate_average_power(data)
+            data["avg_estimated_speed"] = estimate_speed(data, mode='estimate') if not data["avg_speed"] else 0
+            data["speed_threshold"] = estimate_speed(data, mode='threshold')
+            data["avg_estimated_power"] = estimate_average_power(data) if not data["avg_power"] and data["avg_speed"] else 0
             return {
                 "data": data,
                 "gear_ratio": calculate_gear_ratio_with_adjustments(calculate_optimal_gear_ratio(data),
@@ -140,6 +149,7 @@ async def analyze_data(input_data):
     avg_cadences = np.array([obj["data"]["avg_cadence"] for obj in data])
     avg_powers = np.array([obj["data"]["avg_power"] for obj in data])
     avg_estimated_powers = np.array([obj["data"]["avg_estimated_power"] for obj in data])
+    avg_estimated_speeds = np.array([obj["data"]["avg_estimated_speed"] for obj in data])
     avg_surfaces = np.array([obj["data"]["avg_surface"] for obj in data])
     elevation_gains = []
     elevation_thresholds = []
@@ -153,11 +163,11 @@ async def analyze_data(input_data):
         elevation_thresholds.append(obj_elevation_threshold)
 
     avg_power = np.mean(avg_powers)
-    if avg_power == 0:
+    if avg_power == 0 and avg_speed > 0:
         avg_power = np.mean(avg_estimated_powers)
 
     avg_data = {
-        "avg_speed": np.mean(avg_speed),
+        "avg_speed": np.mean(avg_speed) if avg_speed > 0 else np.mean(avg_estimated_speeds),
         "avg_speed_threshold": np.mean(avg_speed_thresholds),
         "avg_heart_rate": np.mean(avg_heart_rates),
         "avg_cadence": np.mean(avg_cadences),
@@ -167,7 +177,7 @@ async def analyze_data(input_data):
         "elevation_threshold": np.mean(elevation_thresholds),
     }
 
-    explanation = await get_gear_ratio_explanation(avg_data, avg_gear_ratio, input_data["wheel_circumference"])
+    explanation = await get_gear_ratio_explanation(avg_data, avg_gear_ratio, input_data["wheel_circumference"], input_data["lang"])
     return {
         "optimal_gear_ratio": find_gear_combination(avg_gear_ratio),
         "data": avg_data,

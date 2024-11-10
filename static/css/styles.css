@@ -1,20 +1,27 @@
-header {
+header, main {
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-main {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+.separator {
+    margin: 0 10px;
+    border-right: 1px solid #ccc;
+    line-height: 25px;
 }
 
-.separator { margin: 0 10px; border-right: 1px solid #ccc; line-height: 25px; }
-.clickable { cursor: pointer; color: #f55555; text-decoration: underline; }
-.center-column { display: flex; flex-direction: column; align-items: center; }
+.clickable {
+    cursor: pointer;
+    color: #f55555;
+    text-decoration: underline;
+}
+
+.center-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
 #upload-container {
     max-width: 500px;
@@ -125,37 +132,27 @@ input[type="file"] {
 
 @media (max-width: 600px) {
     .values {
-        grid-template-columns: auto;
+        grid-template-columns: 1fr;
     }
 }
 
-#simmilar-ratios-table {
+#simmilar-ratios-table, #speeds-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
 
-#simmilar-ratios-table td {
-    border: 1px solid #ccc;
+#simmilar-ratios-table td, #speeds-table td {
     padding: 10px;
     text-align: center;
     cursor: pointer;
-    font-family: Arial, sans-serif;
     background-color: #f9f9f9;
+    border: 1px solid #ccc;
 }
 
 #simmilar-ratios-table td:hover {
     background-color: #ff9900;
     color: #fff;
-}
-
-
-#speeds-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 16px;
-    font-family: Arial, sans-serif;
 }
 
 #speeds-table th, #speeds-table td {

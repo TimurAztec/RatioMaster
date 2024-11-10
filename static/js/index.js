@@ -29,10 +29,27 @@ $(document).ready(function() {
 				position: "fixed",
 				top: "50%",
 				left: "50%",
-				transform: "translate(-50%, -50%)"
+				transform: "translate(-50%, -50%)",
+				maxWidth: "90%",
+				minWidth: "300px",
 			});
-
-			$(".ui-dialog-titlebar-close").html("&#10005;");
+	
+			$(".ui-dialog-titlebar-close").html("&#10005;").css({
+				fontSize: "20px", 
+				color: "#fff", 
+				backgroundColor: "#f44336",
+				padding: "5px", 
+				borderRadius: "50%",
+			});
+	
+			$(".ui-dialog-content").css({
+				padding: "20px",
+				color: "#333",
+				fontFamily: "Arial, sans-serif"
+			});
+		},
+		close: function() {
+			$(this).find(".ui-dialog-content").html("");
 		}
 	});
     $("#results-overlay").dialog("close");
@@ -73,6 +90,7 @@ $(document).ready(function() {
 //            formData.append('links', JSON.stringify(stravaLinks.split('\n')));
 //        }
 		formData.append('wheel_circumference', $('#tire').val());
+		formData.append('lang', $('#language-selector').val());
 		$.ajax({
 			url: '/upload_gpx',
 			type: 'POST',
@@ -237,7 +255,7 @@ function updateResultsChart(data) {
             data: {
                 labels: filteredLabels,
                 datasets: [{
-                    label: "Ride Metrics",
+                    label: "Route Metrics",
                     data: filteredData,
                     backgroundColor: "rgba(54, 162, 235, 0.2)",
                     borderColor: "rgba(54, 162, 235, 1)",
