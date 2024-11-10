@@ -3,14 +3,49 @@
     <head>
         <title>Ratio Master</title>
         <meta name="viewport" content="width=465; user-scalable=no">
+        <meta name="viewport" content="width=465; user-scalable=no">
+
+        <meta name="description" content="Ratio Master helps single speed/fixed gear cyclists find the optimal gear ratio by analyzing ride data from GPX/TCX files. Get the best performance for your rides!">
+        <meta name="keywords" content="gear ratio calculator, cycling, gear, fixed gear, single speed, GPX analysis, cycling app, bike gear optimizer, Ratio Master">
+        <meta name="robots" content="index, follow">
+
+        <meta property="og:title" content="Ratio Master">
+        <meta property="og:description" content="Upload GPX/TCX files to find the best gear ratio for your cycling routes!">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="http://www.ratiomaster.xyz/">
+        <meta property="og:image" content="{{ url_for('static', filename='images/logo.png') }}">
+
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="Ratio Master">
+        <meta name="twitter:description" content="Find the optimal gear ratio for your rides by uploading GPX/TCX files!">
+        <meta name="twitter:image" content="{{ url_for('static', filename='images/logo.png') }}">
+
         <link type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" media="screen">
         <link type="text/css" href="{{ url_for('static', filename='css/jquery-ui.min.css') }}" rel="stylesheet">
         <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
         <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/values.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/index.js') }}"></script>
+
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "Ratio Master",
+          "url": "http://www.ratiomaster.xyz/",
+          "description": "Ratio Master helps single speed/fixed gear cyclists calculate optimal gear ratios by analyzing their rides.",
+          "applicationCategory": "SportsApplication",
+          "author": {
+            "@type": "Person",
+            "name": "Timur Ptashchenko",
+            "url": "https://github.com/TimurAztec"
+          },
+          "image": "https://www.ratiomaster.xyz/static/images/logo.png"
+        }
+        </script>
     </head>
     <body>
         <div id="loading-overlay"><div class="spinner"></div><span data-translate="loading">Loading, please wait, it may take few minutes...</span></div>
