@@ -2,8 +2,7 @@
 <html lang="en">
     <head>
         <title>Ratio Master</title>
-        <meta name="viewport" content="width=465; user-scalable=no">
-        <meta name="viewport" content="width=465; user-scalable=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <meta name="description" content="Ratio Master helps single speed/fixed gear cyclists find the optimal gear ratio by analyzing ride data from GPX/TCX files. Get the best performance for your rides!">
         <meta name="keywords" content="gear ratio calculator, cycling, gear, fixed gear, single speed, GPX analysis, cycling app, bike gear optimizer, Ratio Master">
@@ -63,9 +62,9 @@
             <p>Developed by <strong>Timur Ptashchenko</strong></p>
             <p><a class="clickable" href="https://github.com/TimurAztec">GitHub</a></p>
         </div>
-        <header>
+        <header class="center-column">
             <span>
-                <a href="/" title="Ratio Master"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="RATIO MASTER"></a>
+                <a href="/" title="Ratio Master"><img id="logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="RATIO MASTER"></a>
             </span>
             <span id="settings">
                 <label for="language-selector">
@@ -130,7 +129,7 @@
                     </span>
                 </div>
             </div>
-            <div id="more">
+            <div id="more" class="center-column">
                 <table id="speeds-table">
                     <thead>
                         <tr>
