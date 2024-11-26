@@ -250,6 +250,31 @@ tr:hover {
     background-color: darkred !important;
 }
 
+.clickable {
+    cursor: pointer;
+    text-decoration: none;
+    color: #0078d4;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.clickable:hover {
+    color: #0056a4;
+    text-decoration: underline;
+}
+
+.clickable:active {
+    color: #003f7f;
+    text-decoration: underline;
+}
+
+.separator {
+    display: inline-block;
+    width: 1px;
+    height: 1em;
+    background-color: #ccc;
+    margin: 0 8px;
+    opacity: 0.5;
+}
 
 @media screen and (max-width: 768px) {
     header, main {
