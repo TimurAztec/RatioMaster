@@ -18,16 +18,22 @@ openaiClient = AsyncOpenAI(
 )
 
 def find_gear_combination(target_ratio, max_chainring=60, max_sprocket=28, threshold=0.01):
-    combinations = []
+    best_combination = None
+    max_skid_patches = 0
+
+    def gcd(a, b):
+        return a if b == 0 else gcd(b, a % b)
 
     for chainring in range(28, max_chainring + 1):
         for sprocket in range(9, max_sprocket + 1):
             ratio = chainring / sprocket
-
             if abs(ratio - target_ratio) < threshold:
-                combinations.append((chainring, sprocket))
+                skid_patches = sprocket / gcd(chainring, sprocket)
+                if skid_patches > max_skid_patches:
+                    max_skid_patches = skid_patches
+                    best_combination = (chainring, sprocket)
 
-    return combinations[-1] if len(combinations) else find_gear_combination(target_ratio, threshold=threshold+0.01)
+    return best_combination if best_combination else find_gear_combination(target_ratio, threshold=threshold + 0.01)
 
 
 def calculate_gear_ratio_with_adjustments(current_gear_ratio, wheel_circumference=2111, crank_length=170):
@@ -48,12 +54,18 @@ def extract_activity_id(link):
     raise ValueError("Invalid Strava link format")
 
 async def get_gear_ratio_explanation(avg_data, optimal_gear_ratio, wheel_circumference=2111, lang="en"):
+    if lang == "ua":
+        language_instruction = "Будь ласка, поясніть на українській мові"
+    elif lang == "en":
+        language_instruction = "Please explain in English"
+    else:
+        language_instruction = f"Please explain in {lang}"
+    
     prompt = (
-        f"Explain the rationale for selecting a gear ratio of {round(optimal_gear_ratio, 2)} based on the following data:\n"
+        f"{language_instruction} the rationale for selecting a gear ratio of {round(optimal_gear_ratio, 2)} based on the following data:\n"
         f"- Wheel circumference: {round(wheel_circumference)} \n"
         f"- Surface quality: {round(avg_data['avg_surface'], 2)} (scale 0 to 1)\n"
-        f"- Elevation gain: {avg_data['elevation_gain']} meters\n\n"
-        f"- Response should be in {lang} language.\n"
+        f"- Elevation gain: {avg_data['elevation_gain']} meters\n"
     )
 
     if avg_data.get('avg_power') and avg_data['avg_power'] > 0:
@@ -73,14 +85,16 @@ async def get_gear_ratio_explanation(avg_data, optimal_gear_ratio, wheel_circumf
 
     prompt += (
             "Provide a brief, clear and concise explanation of how these factors influenced the gear ratio choice. "
-            "Make an educated suggestion of the bike type and riding conditions based on the data, assuming all bikes are single-speed/fixed-gear. "
+            "Make a proposal of suitable bike type and riding conditions based on the data, assuming all bikes are single-speed/fixed-gear. "
             "Consider the following: \n"
             "- If surface quality is above 0.95 and the gear ratio exceeds 3.2, it suggests a track bike ride. \n"
             "- If surface quality is above 0.77 and the gear ratio exceeds 2.5, it indicates a single-speed road bike ride. \n"
             "- If surface quality is below 0.77 it likely means off-road riding. \n"
             "- If surface quality is close to or below 0.5, it likely indicates a single-speed MTB or gravel bike ride. \n"
             "- Match the wheel circumference with a wheel size chart to further determine the bike type. \n"
+            "- Wheel size 28\" indicate that it's road or track bike. \n"
             "- Wheel sizes 29\", 27.5\" and 26\" indicate that it's MTB bike. Wheel circumference above 2300 usually indicates 29\" MTB bike. \n"
+            "- Indicate MTB bike only if wheel size is matching and surface quality is bad. \n"
             "Explain your reasoning as if you made the gear ratio decision. "
             "Do not include any numerical data or include missing values. Focus entirely on the reasoning behind your selection. "
     )
@@ -92,7 +106,7 @@ async def get_gear_ratio_explanation(avg_data, optimal_gear_ratio, wheel_circumf
                 {"role": "system", "content": "You are a helpful assistant that explains single speed bike gear ratio decisions."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=200,
+            max_tokens=333,
             temperature=0.2
         )
         return response.choices[0].message.content

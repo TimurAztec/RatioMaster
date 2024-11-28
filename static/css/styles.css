@@ -276,6 +276,60 @@ tr:hover {
     opacity: 0.5;
 }
 
+.results-content {
+    text-align: center;
+}
+
+.results-message {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.file-object {
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease-in-out;
+}
+
+.file-object:hover {
+    background-color: #e9ecef;
+}
+
+.remove-file {
+    color: #dc3545;
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: color 0.2s ease-in-out;
+}
+
+.remove-file:hover {
+    color: #bd2130;
+}
+
+.file-object {
+    list-style-type: none;
+}
+
+.analysis-span {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 4px;
+    background-color: #f8f9fa;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease-in-out;
+}
+
 @media screen and (max-width: 768px) {
     header, main {
         padding: 0.5rem;

@@ -2,14 +2,30 @@ let translations = []
 let resultsChart;
 
 $(document).ready(function() {
+	const hasVisited = Boolean(localStorage.getItem('hasVisited'));
     const fileInput = $('#files');
     const fileList = $('#fileList');
     const dataTransfer = new DataTransfer();
-	$('#loading-overlay').fadeOut();
-	calculate();
-	loadTranslations('en');
 
-	$('#language-selector').change( function(val) { loadTranslations(val.currentTarget.value); });
+	if (!hasVisited) {
+		const defaultUserLang = navigator.language || navigator.languages[0];
+		const lang = defaultUserLang.startsWith('uk') ? 'ua' : 'en';
+		localStorage.setItem('hasVisited', true);
+		localStorage.setItem('lang', lang);
+	}
+
+	if (localStorage.getItem('lang')) {
+		$('#language-selector').val(localStorage.getItem('lang'));
+	}
+
+	$('#loading-overlay').fadeOut();
+	loadTranslations($('#language-selector').val());
+
+	$('#language-selector').change( function(val) {
+		const lang = val.currentTarget.value;
+		localStorage.setItem('lang', lang);
+		loadTranslations(lang);
+	});
 	$('#chainring').change( function() { calculate(); });
 	$('#sprocket').change( function() { calculate(); });
 	$('#tire').change( function() { calculate(); });
@@ -102,7 +118,7 @@ $(document).ready(function() {
         fileList.empty();
         if (dataTransfer.files.length) {
             $.each(dataTransfer.files, function (index, file) {
-                const fileItem = $(`<div>${file.name} <span class="remove-file" data-index="${index}">✖</span></div>`);
+                const fileItem = $(`<div class="file-object">${file.name} <span class="remove-file" data-index="${index}">✖</span></div>`);
                 fileList.append(fileItem);
             });
         } else {
@@ -195,6 +211,8 @@ function calculateGCD(num1, num2) {
     return num1;
 }
 
+function findGCD(a,b) { return ( b == 0 ) ? a : findGCD(b, a%b); }
+
 function calculate() {
 	let chainringT = parseInt($('#chainring').val());
 	let sprocketT = parseInt($('#sprocket').val());
@@ -205,6 +223,7 @@ function calculate() {
 
 	$('#ratio').html(ratio);
 	$('#gear-inches').html(Math.ceil(ratio * tire_inches));
+	$('#skid-patches').html(sprocketT/findGCD(chainringT, sprocketT));
 
 	let thisFactor = 1;
 	let thisUnit = '';
@@ -219,14 +238,14 @@ function calculate() {
 	$('#development').html(Math.round(development*100/thisFactor)/100 + ' ' + thisUnit);
 
 	const situations = [
-		{ name: "Top speed", range: [120, 140] },
-		{ name: "Fast Riding", range: [100, 120] },
-		{ name: "Moderate Riding", range: [80, 110] },
-		{ name: "Casual Riding", range: [70, 90] },
-		{ name: "Hill Climbing", range: [40, 70] },
-		{ name: "Steep hill climbing 💀", range: [30, 50] },
-		{ name: "Long Distance Riding", range: [75, 85] },
-		{ name: "Off-Road Riding", range: [65, 85] },
+		{ name: translations["riding-situation-top-speed"], range: [120, 140] },
+		{ name: translations["riding-situation-fast-riding"], range: [100, 120] },
+		{ name: translations["riding-situation-moderate-riding"], range: [80, 110] },
+		{ name: translations["riding-situation-casual-riding"], range: [70, 90] },
+		{ name: translations["riding-situation-hill-climbing"], range: [40, 70] },
+		{ name: translations["riding-situation-step-hill-climbing"], range: [30, 50] },
+		{ name: translations["riding-situation-long-distance-riding"], range: [75, 85] },
+		{ name: translations["riding-situation-off-road-riding"], range: [65, 85] },
 	];
 
 	$('#speeds-table-body').empty();
@@ -294,17 +313,18 @@ function changeGearRatio(ring, sprocket, ratio) {
 }
 
 function loadTranslations(lang) {
-	$.getJSON('static/locales/' + lang + '.json', function(translations) {
-		translations = translations;
+	$.getJSON('static/locales/' + lang + '.json', (translations_res) => {
+		translations = translations_res;
 		$('[data-translate]').each(function() {
 			var key = $(this).data('translate');
 			$(this).text(translations[key]);
 		});
+		calculate();
 	});
 }
 
 function updateResultsChart(data) {
-    const labels = ["Cadence", "Heart Rate", "Estimated Power", "Speed", "Surface Quality", "Elevation Gain"];
+    const labels = [translations["cadence"], translations["heart-rate"], translations["estimated-power"], translations["speed"], translations["surface-quality"], translations["elevation-gain"]];
     const dataValues = [
         normalizeValue(data.avg_cadence, 0, 140),
         normalizeValue(data.avg_heart_rate, 40, 200),
@@ -326,7 +346,7 @@ function updateResultsChart(data) {
             data: {
                 labels: filteredLabels,
                 datasets: [{
-                    label: "Route Metrics",
+                    label: translations["route-metrics"],
                     data: filteredData,
                     backgroundColor: "rgba(54, 162, 235, 0.2)",
                     borderColor: "rgba(54, 162, 235, 1)",
