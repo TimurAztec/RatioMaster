@@ -216,6 +216,7 @@ function findGCD(a,b) { return ( b == 0 ) ? a : findGCD(b, a%b); }
 function calculate() {
 	let chainringT = parseInt($('#chainring').val());
 	let sprocketT = parseInt($('#sprocket').val());
+	drawConnectedGears(chainringT, sprocketT);
 	let unit = $("input[name='unit']:checked").val();
 	const ratio = Math.round(chainringT/sprocketT*100)/100;
 	const tire = Number($('#tire').val());
@@ -393,95 +394,89 @@ function normalizeValue(value, min, max) {
     return value > 1 ? returnValue : value;
 }
 
-// function draw(){
-	
-// 	var canvas = document.getElementById('wheel');
-// 	var lang = $("input[name='lang']:checked").val();
-	
+function drawConnectedGears(chainringTeeth, sprocketTeeth) {
+    const canvas = document.getElementById('gearCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// 	if (canvas.getContext){
-// 		var thispgcd=pgcd(r,s);
-// 		var simp_den = r/thispgcd
-// 		var sp = s/thispgcd;
-// 		var posx = 80;
-// 		var posy = 80;
-// 		var ctx = canvas.getContext('2d');
-// 		ctx.clearRect(0,0,300,300);
+    const toothSize = 0.87;
+    const chainringRadius = chainringTeeth * toothSize;
+    const sprocketRadius = sprocketTeeth * toothSize;
 
-// 		// Roue
-// 		ctx.beginPath();
-// 		ctx.strokeStyle = "#333333";
-// 		ctx.lineWidth=4;
-// 		ctx.arc(posx,posy,72,0,Math.PI*2,true);
-// 		ctx.stroke();
-// 		ctx.beginPath();
-// 		ctx.strokeStyle = "#AAAAAA";
-// 		ctx.lineWidth=3;
-// 		ctx.arc(posx,posy,67,0,Math.PI*2,true);
-// 		ctx.stroke();
+    const chainringX = 2 * canvas.width / 3;
+    const chainringY = canvas.height / 2;
+    const sprocketX = canvas.width / 3;
+    const sprocketY = canvas.height / 2;
 
-// 		// Rayons
-// 		ctx.strokeStyle = "#BBBBBB";
-// 		ctx.lineWidth=1;
-// 		for (var i=0; i<32; i++) {
-// 			ctx.beginPath();
-// 			ctx.arc(posx,posy,67,i*(Math.PI*2/32),((i+0.2)*Math.PI*2/32),false);
-// 			ctx.lineTo(posx,posy);
-// 			ctx.stroke();
-// 		}
+    function drawGear(x, y, radius, teeth, color) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
 
-// 		// Skid patchs
-// 		ctx.strokeStyle = "#FF0055";
-// 		ctx.lineWidth=8;
-// 		for (var i=0; i<sp; i++) {
-// 			ctx.beginPath();
-// 			ctx.arc(posx,posy,70,i*(Math.PI*2/sp),((i+0.2)*Math.PI*2/sp),false);
-// 			ctx.stroke();
-// 		}
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+        ctx.stroke();
 
-// 		if ( $('#a').attr('checked') && simp_den%2 > 0 ) {
-// 			ctx.strokeStyle = "#0088FF";
-// 			var offset = Math.PI/sp;
-// 			for (var i=0; i<sp; i++) {
-// 				ctx.beginPath();
-// 				ctx.arc(posx,posy,70,i*(Math.PI*2/sp)+offset,((i+0.2)*Math.PI*2/sp)+offset,false);
-// 				ctx.stroke();
-// 			}
-// 		}
+        const toothAngle = (2 * Math.PI) / teeth;
+        for (let i = 0; i < teeth; i++) {
+            const angle = i * toothAngle;
+            const innerX = Math.cos(angle) * radius;
+            const innerY = Math.sin(angle) * radius;
+            const outerX = Math.cos(angle) * (radius + 5);
+            const outerY = Math.sin(angle) * (radius + 5);
 
-// 		// Plateau et pignon
-// 		cog(ctx,s,posx,posy);
-// 		cog(ctx,r,posx+100,posy);
+            ctx.beginPath();
+            ctx.moveTo(innerX, innerY);
+            ctx.lineTo(outerX, outerY);
+            ctx.stroke();
+        }
 
-// 		// Chaine
-// 		ctx.beginPath();
-// 		ctx.strokeStyle = "#888888";
-// 		ctx.lineWidth=2;
-// 		ctx.moveTo(posx,posy-s/2);
-// 		ctx.lineTo(posx+100,posy-r/2+2);
-// 		ctx.arc(posx+100,posy,r/2-2,-Math.PI/2,Math.PI/2,false);
-// 		ctx.lineTo(posx,posy+s/2);
-// 		ctx.arc(posx,posy,s/2,Math.PI/2,-Math.PI/2,false);
-// 		ctx.stroke();
-// 	}
-// }
+        ctx.beginPath();
+        ctx.arc(0, 0, radius / 4, 0, 2 * Math.PI);
+        ctx.stroke();
 
-// function cog(ctx,teeth,x,y) {
-// 	ctx.beginPath();
-// 	ctx.arc(x,y,teeth/2.5,0,Math.PI*2,true); // Cercle ext�rieur
-// 	ctx.fillStyle = "#333333";
-// 	ctx.fill();
-// 	for (var i=0; i<teeth; i++) {
-// 		ctx.beginPath();
-// 		ctx.arc(x,y,teeth/2.5+2,i*(Math.PI*2/teeth),((i+0.5)*Math.PI*2/teeth),false);
-// 		ctx.lineTo(x,y);
-// 		ctx.fill();
-// 	}
-// 	for (var i=0; i<5; i++) {
-// 		ctx.beginPath();
-// 		ctx.fillStyle = "white";
-// 		ctx.arc(x,y,(teeth-5)/3.5,i*(Math.PI*2/5),((i+0.7)*Math.PI*2/5),false);
-// 		ctx.lineTo(x,y);
-// 		ctx.fill();
-// 	}
-// } 
+        ctx.restore();
+    }
+
+    function drawChain() {
+        ctx.save();
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 3;
+
+        const midX = (chainringX + sprocketX) / 2;
+        const midY = (chainringY + sprocketY) / 2;
+
+        const chainPathRadius = Math.hypot(chainringX - sprocketX, chainringY - sprocketY) / 2;
+        const curveOffset = 35;
+
+        ctx.beginPath();
+        ctx.moveTo(chainringX, chainringY - chainringRadius);
+        ctx.quadraticCurveTo(midX, midY - curveOffset, sprocketX, sprocketY - sprocketRadius);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(chainringX, chainringY + chainringRadius);
+        ctx.quadraticCurveTo(midX, midY + curveOffset, sprocketX, sprocketY + sprocketRadius);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(sprocketX, sprocketY, sprocketRadius, Math.PI / 2, 3 * Math.PI / 2);
+        ctx.strokeStyle = '#888';
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(chainringX, chainringY, chainringRadius, -Math.PI / 2, Math.PI / 2);
+        ctx.strokeStyle = '#888';
+        ctx.stroke();
+
+        ctx.restore();
+    }
+
+    drawGear(chainringX, chainringY, chainringRadius, chainringTeeth, '#e07b39');
+    drawGear(sprocketX, sprocketY, sprocketRadius, sprocketTeeth, '#33a1fd');
+
+    drawChain();
+}
+
+
