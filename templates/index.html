@@ -100,34 +100,20 @@
                         <input type="checkbox" name="ambidextrous" id="ambidextrous"> -->
                     </div>
                 </div>
-                <div id="upload-container">
-                    <h3 style="margin-top: 6px;" data-translate="upload-gpx">Upload GPX/TCX files</h3>
-                    <p data-translate="upload-gpx-desc">Upload your GPX or TCX files to find gear ratio that suits your rides!</p>
-                    <div id="drop-area" class="drop-area">
-                        <span data-translate="drag-drop">Drag and drop files here, or</span>
-                        <label for="files" class="upload-label" data-translate="choose-gpx">Choose files</label>
-                        <input type="file" id="files" multiple accept=".gpx, .tcx" style="display:none;">
-                    </div>
-                    <div id="fileList" class="file-list"></div>
-                    <button id="submit" type="button" class="submit-button" data-translate="upload">Submit</button>
-                </div>
 
                 <!-- <canvas id="wheel" width="480" height="320"></canvas> -->
 
                 <h3 class="multi" data-translate="analysis">Analysis</h3>
-                <div>
+                <div style="max-width: 500px; display: flex; padding: 12px 0; flex-wrap: wrap; gap: 8px;">
                     <span class="analysis-span">
                         <span data-translate="ratio">Ratio: </span><span id="ratio" style="font-weight: bold;"></span>
                     </span>
-                    <span class="separator"></span>
                     <span class="analysis-span">
                         <span data-translate="skid-patches">Skid patches: </span><span id="skid-patches" style="font-weight: bold;"></span>
                     </span>
-                    <span class="separator"></span>
                     <span class="analysis-span">
                         <span data-translate="gear-inches">Gear inches: </span><span id="gear-inches" style="font-weight: bold;"></span>
                     </span>
-                    <span class="separator"></span>
                     <span class="analysis-span">
                         <span data-translate="d-per-pedal">Distance per pedals rotation: </span><span id="development" style="font-weight: bold;"></span>
                     </span>
@@ -137,9 +123,10 @@
                 <table id="speeds-table">
                     <thead>
                         <tr>
-                            <th data-translate="riding-situation">Riding Situation</th>
-                            <th data-translate="cadence-range">Cadence Range (RPM)</th>
-                            <th data-translate="average-speed">Average Speed <span id="avg-speed-unit">(km/h)</span></th>
+                            <th data-translate="cadence-table">Cadence (RPM)</th>
+                            <th><span data-translate="speed-table">Speed </span><span class="speed-unit">(km/h)</span></th>
+                            <th data-translate="cadence-table">Cadence (RPM)</th>
+                            <th><span data-translate="speed-table">Speed </span><span class="speed-unit">(km/h)</span></th>
                         </tr>
                     </thead>
                     <tbody id="speeds-table-body">
@@ -155,6 +142,17 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <div id="upload-container">
+                <h3 style="margin-top: 6px;" data-translate="upload-gpx">Upload GPX/TCX files</h3>
+                <p data-translate="upload-gpx-desc">Upload your GPX or TCX files to find gear ratio that suits your rides!</p>
+                <div id="drop-area" class="drop-area">
+                    <span data-translate="drag-drop">Drag and drop files here, or</span>
+                    <label for="files" class="upload-label" data-translate="choose-gpx">Choose files</label>
+                    <input type="file" id="files" multiple accept=".gpx, .tcx" style="display:none;">
+                </div>
+                <div id="fileList" class="file-list"></div>
+                <button id="submit" type="button" class="submit-button" data-translate="upload">Submit</button>
             </div>
         </main>
     </body>

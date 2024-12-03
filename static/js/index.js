@@ -32,7 +32,7 @@ $(document).ready(function() {
 	$('#ambidextrous').change( function() { calculate(); });
 	$('[name=unit]').change( function(val) { 
 		calculate();
-		$('#avg-speed-unit').html(val.currentTarget.value == 'm' ? '(km/h)' : '(mph)');
+		$('.speed-unit').html(val.currentTarget.value == 'm' ? '(km/h)' : '(mph)');
 	});
 
 	$("#results-overlay").dialog({
@@ -237,34 +237,35 @@ function calculate() {
 	let development = ratio * (tire/1000);
 	$('#development').html(Math.round(development*100/thisFactor)/100 + ' ' + thisUnit);
 
-	const situations = [
-		{ name: translations["riding-situation-top-speed"], range: [120, 140] },
-		{ name: translations["riding-situation-fast-riding"], range: [100, 120] },
-		{ name: translations["riding-situation-moderate-riding"], range: [80, 110] },
-		{ name: translations["riding-situation-casual-riding"], range: [70, 90] },
-		{ name: translations["riding-situation-hill-climbing"], range: [40, 70] },
-		{ name: translations["riding-situation-step-hill-climbing"], range: [30, 50] },
-		{ name: translations["riding-situation-long-distance-riding"], range: [75, 85] },
-		{ name: translations["riding-situation-off-road-riding"], range: [65, 85] },
-	];
+	const cadenceStep = 10;
+	const minCadence = 30;
+	const maxCadence = 140;
 
 	$('#speeds-table-body').empty();
-	situations.forEach(situation => {
-		const [minCadence, maxCadence] = situation.range;
-		const averageCadence = (minCadence + maxCadence) / 2;
+	let rowsHtml = '';
+	for (let cadence = minCadence; cadence <= maxCadence; cadence += cadenceStep * 2) {
+		const speed1 = (cadence * development / 1000) * 60;
+		const speed2 = ((cadence + cadenceStep) * development / 1000) * 60;
 
-		const speedKMH = (averageCadence * development / 1000) * 60;
-		const speedMPH = speedKMH * 0.621371;
+		const speed1Display = unit === "m" ? speed1.toFixed(2) : (speed1 * 0.621371).toFixed(2);
+		const speed2Display = unit === "m" ? speed2.toFixed(2) : (speed2 * 0.621371).toFixed(2);
 
-		const newRow = `
+		const isInHighlightRange1 = cadence >= 70 && cadence <= 100;
+		const isInHighlightRange2 = (cadence + cadenceStep) >= 70 && (cadence + cadenceStep) <= 100;
+	
+		const highlightClass1 = isInHighlightRange1 ? 'table-highlight' : '';
+		const highlightClass2 = isInHighlightRange2 ? 'table-highlight' : '';
+	
+		rowsHtml += `
 			<tr>
-				<td>${situation.name}</td>
-				<td>${minCadence} - ${maxCadence}</td>
-				<td>${unit == "m" ? speedKMH.toFixed(2) : speedMPH.toFixed(2)}</td>
+				<td class="${highlightClass1}">${cadence}</td>
+				<td class="${highlightClass1}">${speed1Display}</td>
+				<td class="${highlightClass2}">${cadence + cadenceStep}</td>
+				<td class="${highlightClass2}">${speed2Display}</td>
 			</tr>
 		`;
-		$('#speeds-table-body').append(newRow);
-	});
+	}
+	$('#speeds-table-body').append(rowsHtml);
 
 	populateTable(ratio);
 }

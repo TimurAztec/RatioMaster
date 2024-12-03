@@ -44,7 +44,8 @@ h3 {
     font-size: 24px;
     color: #3b3b3b;
     border-bottom: 3px solid #e07b39;
-    padding-bottom: 10px;
+    padding-bottom: 6px;
+    padding-top: 4px;
     text-align: center;
 }
 
@@ -162,7 +163,7 @@ input[type="file"] {
 
 table {
     width: 100%;
-    max-width: 800px;
+    max-width: 500px;
     margin: auto;
     border-collapse: collapse;
     table-layout: auto;
@@ -193,6 +194,12 @@ tr:hover {
     color: #fff;
 }
 
+.table-highlight {
+    background-color: #ff9900;
+    color: white;
+    font-weight: bolder;
+    box-shadow: inset 0 0 0 1px #ff9900;
+}
 
 #loading-overlay {
     display: none;
@@ -274,6 +281,7 @@ tr:hover {
     background-color: #ccc;
     margin: 0 8px;
     opacity: 0.5;
+    flex-shrink: 0;
 }
 
 .results-content {
@@ -320,9 +328,11 @@ tr:hover {
 }
 
 .analysis-span {
+    white-space: nowrap;
+    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
-    font-size: 14px;
+    font-size: 18px;
     line-height: 1.5;
     padding: 4px;
     background-color: #f8f9fa;
