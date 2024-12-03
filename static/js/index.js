@@ -38,21 +38,145 @@ $(document).ready(function() {
 	$("#cadence-dialog").dialog({
         autoOpen: false,
         modal: true,
+		autoOpen: false,
+		draggable: false,
+    	resizable: false,
+		position: { my: "center", at: "center", of: window },
+		open: function() {
+			$(this).parent().css({
+				position: "fixed",
+				top: "50%",
+				left: "50%",
+				transform: "translate(-50%, -50%)",
+				maxWidth: "90%",
+				minWidth: "300px",
+			});
+	
+			$(".ui-dialog-titlebar-close").html("&#10005;").css({
+				fontSize: "20px", 
+				color: "#fff", 
+				backgroundColor: "#f44336",
+				padding: "5px", 
+				borderRadius: "50%",
+			});
+	
+			$(".ui-dialog-content").css({
+				padding: "20px",
+				color: "#333",
+				fontFamily: "Arial, sans-serif"
+			});
+		},
+		close: function() {
+			$(this).find(".ui-dialog-content").html("");
+		},
         width: 400
     });
     $("#gear-ratio-dialog").dialog({
         autoOpen: false,
         modal: true,
+		autoOpen: false,
+		draggable: false,
+    	resizable: false,
+		position: { my: "center", at: "center", of: window },
+		open: function() {
+			$(this).parent().css({
+				position: "fixed",
+				top: "50%",
+				left: "50%",
+				transform: "translate(-50%, -50%)",
+				maxWidth: "90%",
+				minWidth: "300px",
+			});
+	
+			$(".ui-dialog-titlebar-close").html("&#10005;").css({
+				fontSize: "20px", 
+				color: "#fff", 
+				backgroundColor: "#f44336",
+				padding: "5px", 
+				borderRadius: "50%",
+			});
+	
+			$(".ui-dialog-content").css({
+				padding: "20px",
+				color: "#333",
+				fontFamily: "Arial, sans-serif"
+			});
+		},
+		close: function() {
+			$(this).find(".ui-dialog-content").html("");
+		},
         width: 400
     });
     $("#skid-patches-dialog").dialog({
         autoOpen: false,
         modal: true,
+		autoOpen: false,
+		draggable: false,
+    	resizable: false,
+		position: { my: "center", at: "center", of: window },
+		open: function() {
+			$(this).parent().css({
+				position: "fixed",
+				top: "50%",
+				left: "50%",
+				transform: "translate(-50%, -50%)",
+				maxWidth: "90%",
+				minWidth: "300px",
+			});
+	
+			$(".ui-dialog-titlebar-close").html("&#10005;").css({
+				fontSize: "20px", 
+				color: "#fff", 
+				backgroundColor: "#f44336",
+				padding: "5px", 
+				borderRadius: "50%",
+			});
+	
+			$(".ui-dialog-content").css({
+				padding: "20px",
+				color: "#333",
+				fontFamily: "Arial, sans-serif"
+			});
+		},
+		close: function() {
+			$(this).find(".ui-dialog-content").html("");
+		},
         width: 400
     });
     $("#gear-inches-dialog").dialog({
         autoOpen: false,
         modal: true,
+		autoOpen: false,
+		draggable: false,
+    	resizable: false,
+		position: { my: "center", at: "center", of: window },
+		open: function() {
+			$(this).parent().css({
+				position: "fixed",
+				top: "50%",
+				left: "50%",
+				transform: "translate(-50%, -50%)",
+				maxWidth: "90%",
+				minWidth: "300px",
+			});
+	
+			$(".ui-dialog-titlebar-close").html("&#10005;").css({
+				fontSize: "20px", 
+				color: "#fff", 
+				backgroundColor: "#f44336",
+				padding: "5px", 
+				borderRadius: "50%",
+			});
+	
+			$(".ui-dialog-content").css({
+				padding: "20px",
+				color: "#333",
+				fontFamily: "Arial, sans-serif"
+			});
+		},
+		close: function() {
+			$(this).find(".ui-dialog-content").html("");
+		},
         width: 400
     });
 
