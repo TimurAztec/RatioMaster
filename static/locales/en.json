@@ -42,5 +42,9 @@
     "speed": "Speed",
     "surface-quality": "Surface Quality",
     "elevation-gain": "Elevation Gain",
-    "route-metrics": "Route metrics"
+    "route-metrics": "Route metrics",
+    "cadence-info": "Cadence is your RPM. It's how fast you spin those pedals.",
+    "gear-ratio-info": "Gear ratio is the ratio between the number of teeth on the chainring and the sprocket. It determines how fast you'll move at a given cadence.",
+    "skid-patches-info": "Skid patches are the spots where your tire hits the road when you drift. More patches = less wear. 🛞",
+    "gear-inches-info": "Gear inches tell you how big or small your gear is. It’s the drive wheel diameter multiplied by the gear ratio. 🚴‍♂️"
 }

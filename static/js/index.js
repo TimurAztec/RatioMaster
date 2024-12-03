@@ -35,6 +35,40 @@ $(document).ready(function() {
 		$('.speed-unit').html(val.currentTarget.value == 'm' ? '(km/h)' : '(mph)');
 	});
 
+	$("#cadence-dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        width: 400
+    });
+    $("#gear-ratio-dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        width: 400
+    });
+    $("#skid-patches-dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        width: 400
+    });
+    $("#gear-inches-dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        width: 400
+    });
+
+	$(".cadence-info").click(function() {
+        $("#cadence-dialog").dialog("open");
+    });
+    $("#gear-ratio-info").click(function() {
+        $("#gear-ratio-dialog").dialog("open");
+    });
+    $("#skid-patches-info").click(function() {
+        $("#skid-patches-dialog").dialog("open");
+    });
+    $("#gear-inches-info").click(function() {
+        $("#gear-inches-dialog").dialog("open");
+    });
+
 	$("#results-overlay").dialog({
 		width: 600,
 		height: 600,
