@@ -65,7 +65,7 @@ async def get_gear_ratio_explanation(avg_data, optimal_gear_ratio, wheel_circumf
         f"{language_instruction} the rationale for selecting a gear ratio of {round(optimal_gear_ratio, 2)} based on the following data:\n"
         f"- Wheel circumference: {round(wheel_circumference)} \n"
         f"- Surface quality: {round(avg_data['avg_surface'], 2)} (scale 0 to 1)\n"
-        f"- Elevation gain: {avg_data['elevation_gain']} meters\n"
+        f"- Elevation gain: {round(avg_data['elevation_gain'])} meters\n"
     )
 
     if avg_data.get('avg_power') and avg_data['avg_power'] > 0:
