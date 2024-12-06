@@ -454,7 +454,7 @@ function populateTable(currentRatio, tolerance = 0.05) {
 		const cell = $(`<td title="${ratio}" onclick="changeGearRatio(${ring}, ${sprocket}, ${ratio})">${ring}×${sprocket}</td>`);
 		row.append(cell);
 
-		if ((index + 1) % 8 === 0) {
+		if ((index + 1) % (window.innerWidth > 768 ? 8 : 6) === 0) {
 			tableBody.append(row);
 			row = $("<tr></tr>");
 		}
@@ -631,8 +631,8 @@ function drawConnectedGears(chainringTeeth, sprocketTeeth) {
         ctx.restore();
     }
 
-    drawGear(chainringX, chainringY, chainringRadius, chainringTeeth, '#e07b39');
-    drawGear(sprocketX, sprocketY, sprocketRadius, sprocketTeeth, '#33a1fd');
+    drawGear(chainringX, chainringY, chainringRadius, chainringTeeth, '#C0C0C0');
+    drawGear(sprocketX, sprocketY, sprocketRadius, sprocketTeeth, '#D4AF37');
 
     drawChain();
 }
