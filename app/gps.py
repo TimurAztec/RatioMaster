@@ -1,9 +1,15 @@
+import math
+import os
+from dotenv import load_dotenv
 import gpxpy
 import requests
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import xml.etree.ElementTree as ET
 from datetime import datetime
+
+load_dotenv()
+POINTS_THRESHOLD: int = int(os.getenv('POINTS_THRESHOLD'))
 
 def parse_iso8601(time_str):
     return datetime.fromisoformat(time_str.replace("Z", "+00:00"))
@@ -79,7 +85,7 @@ def filter_close_coordinates(coordinates, threshold_distance=25):
         if calculate_distance(last_coord, coord) > threshold_distance:
             filtered_coords.append(coord)
 
-    return filtered_coords
+    return filtered_coords if len(filtered_coords) < POINTS_THRESHOLD else filter_close_coordinates(filtered_coords, threshold_distance * int(len(filtered_coords)/POINTS_THRESHOLD))
 
 def map_surface_value(surface):
     if surface == 'asphalt':
