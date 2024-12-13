@@ -337,26 +337,30 @@ $(document).ready(function() {
 		formData.append('wheel_circumference', $('#tire').val());
 		formData.append('lang', $('#language-selector').val());
 		$.ajax({
-			url: '/upload',
-			type: 'POST',
-			data: formData,
-			processData: false,
-			contentType: false,
-			success: function(response) {
-				$('#loading-overlay').fadeOut();
-				$("#results-overlay").dialog("open");
-				updateResultsChart(response.data);
-				$("#gear-ratio-explanation").text(response.explanation || "");
-				$("#recommended-gear-ratio").text((response.optimal_gear_ratio[0]/response.optimal_gear_ratio[1]).toFixed(2));
-				$('#chainring').val(response.optimal_gear_ratio[0]);
-				$('#sprocket').val(response.optimal_gear_ratio[1]);
-				calculate();
-			},
-			error: function(xhr, status, error) {
-				alert('Error uploading files: ' + error);
-				$('#loading-overlay').fadeOut();
-			}
-		});
+            url: '/upload',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                $('#loading-overlay').fadeOut();
+                $("#results-overlay").dialog("open");
+                updateResultsChart(response.data);
+                $("#gear-ratio-explanation").text(response.explanation || "");
+                $("#recommended-gear-ratio").text((response.optimal_gear_ratio[0]/response.optimal_gear_ratio[1]).toFixed(2));
+                $('#chainring').val(response.optimal_gear_ratio[0]);
+                $('#sprocket').val(response.optimal_gear_ratio[1]);
+                calculate();
+            },
+            error: function(xhr, status, error) {
+                if (xhr.status === 504) {
+                    alert('The server timed out while processing your request. Please try uploading fewer files at once.');
+                } else {
+                    alert('Error uploading files: ' + error);
+                }
+                $('#loading-overlay').fadeOut();
+            }
+        });
 	});
 });
 

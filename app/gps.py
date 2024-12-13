@@ -74,7 +74,7 @@ def calculate_elevation_gain(elevations):
     return total_gain
 
 
-def filter_close_coordinates(coordinates, threshold_distance=25):
+def filter_close_coordinates(coordinates, threshold_distance=22):
     if not coordinates:
         return []
 
@@ -213,46 +213,48 @@ def process_element(element, coordinates, max_distance):
 
     return None
 
-def get_surface_types(coordinates, max_distance=100, max_workers=4):
+def batch_query(coordinates, batch_size):
+    for i in range(0, len(coordinates), batch_size):
+        batch = coordinates[i:i + batch_size]
+        latitudes = [coord[0] for coord in batch]
+        longitudes = [coord[1] for coord in batch]
+        min_lat, max_lat = min(latitudes), max(latitudes)
+        min_lon, max_lon = min(longitudes), max(longitudes)
+        yield f"""
+        [out:json];
+        (
+          way({min_lat},{min_lon},{max_lat},{max_lon})["surface"];
+        );
+        out body geom;
+        """
+
+def get_surface_types(coordinates, max_distance=100, max_workers=4, batch_size=100):
     if not coordinates:
         return []
-
-    latitudes = [coord[0] for coord in coordinates]
-    longitudes = [coord[1] for coord in coordinates]
-
-    min_lat = min(latitudes)
-    max_lat = max(latitudes)
-    min_lon = min(longitudes)
-    max_lon = max(longitudes)
-
-    query = f"""
-    [out:json];
-    (
-      way({min_lat},{min_lon},{max_lat},{max_lon})["surface"];
-    );
-    out body geom;
-    """
-
-    response = requests.get("http://overpass-api.de/api/interpreter", params={'data': query})
-
-    if response.status_code != 200:
-        raise Exception("Error fetching data from Overpass API")
-
-    data = response.json()
-    elements = data.get('elements', [])
 
     results = []
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_element = {
-            executor.submit(process_element, element, coordinates, max_distance): element
-            for element in elements
-        }
+        futures = []
+        for query in batch_query(coordinates, batch_size):
+            futures.append(executor.submit(requests.get, "http://overpass-api.de/api/interpreter", params={'data': query}))
 
-        for future in as_completed(future_to_element):
-            score = future.result()
-            if score is not None:
-                results.append(score)
+        for future in as_completed(futures):
+            response = future.result()
+            if response.status_code != 200:
+                continue
+            data = response.json()
+            elements = data.get('elements', [])
+
+            element_futures = {
+                executor.submit(process_element, element, coordinates, max_distance): element
+                for element in elements
+            }
+
+            for ef in as_completed(element_futures):
+                score = ef.result()
+                if score is not None:
+                    results.append(score)
 
     return results
 
