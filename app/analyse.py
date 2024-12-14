@@ -60,10 +60,10 @@ async def get_gear_ratio_explanation(avg_data, optimal_gear_ratio, wheel_circumf
         language_instruction = "Please explain in English"
     else:
         language_instruction = f"Please explain in {lang}"
-    
+
     prompt = (
         f"{language_instruction} the rationale for selecting a gear ratio of {round(optimal_gear_ratio, 2)} based on the following data:\n"
-        f"- Wheel circumference: {round(wheel_circumference)} \n"
+        f"- Wheel circumference: {round(wheel_circumference)} mm\n"
         f"- Surface quality: {round(avg_data['avg_surface'], 2)} (scale 0 to 1)\n"
         f"- Elevation gain: {round(avg_data['elevation_gain'])} meters\n"
     )
@@ -84,32 +84,39 @@ async def get_gear_ratio_explanation(avg_data, optimal_gear_ratio, wheel_circumf
         prompt += f"- Cadence: {round(avg_data['avg_cadence'])} rpm\n"
 
     prompt += (
-            "Provide a brief, clear and concise explanation of how these factors influenced the gear ratio choice. "
-            "Make a proposal of suitable bike type and riding conditions based on the data, assuming all bikes are single-speed/fixed-gear. "
-            "Consider the following: \n"
-            "- If surface quality is above 0.95 and the gear ratio exceeds 3.2, it suggests a track bike ride. \n"
-            "- If surface quality is above 0.77 and the gear ratio exceeds 2.5, it indicates a single-speed road bike ride. \n"
-            "- If surface quality is below 0.77 it likely means off-road riding. \n"
-            "- If surface quality is close to or below 0.5, it likely indicates a single-speed MTB or gravel bike ride. \n"
-            "- Match the wheel circumference with a wheel size chart to further determine the bike type. \n"
-            "- Wheel size 28\" indicate that it's road or track bike. \n"
-            "- Wheel sizes 29\", 27.5\" and 26\" indicate that it's MTB bike. Wheel circumference above 2300 usually indicates 29\" MTB bike. \n"
-            "- Indicate MTB bike only if wheel size is matching and surface quality is bad. \n"
-            "Explain your reasoning as if you made the gear ratio decision. "
-            "Do not include any numerical data or include missing values. Focus entirely on the reasoning behind your selection. "
+        "Provide a clear, structured, and detailed explanation of how these factors influenced the gear ratio choice. "
+        "Please propose the most suitable bike type and riding conditions based on the data, assuming all bikes are single-speed/fixed-gear. "
+        "Use the following guidelines to identify the bike type: \n"
+        "- If surface quality is above 0.95 and the gear ratio exceeds 3.2, it suggests a track bike ride.\n"
+        "- If surface quality is above 0.77 and the gear ratio exceeds 2.5, it indicates a single-speed road bike ride.\n"
+        "- If surface quality is below 0.77, it likely means off-road riding.\n"
+        "- If surface quality is below 0.5, it likely indicates a single-speed MTB or gravel bike ride.\n"
+        "- If the wheel circumference is above 2300 mm, it usually indicates a 29\" MTB bike.\n"
+        "- Wheel sizes 28\" generally indicate a road or track bike.\n"
+        "- Wheel sizes 29\", 27.5\", and 26\" generally indicate an MTB bike.\n"
+        "- For MTB bikes, surface quality should also be low (below 0.5) for an accurate classification.\n"
+        "- Ensure that your reasoning accounts for both surface quality and gear ratio in identifying the bike type."
+        "Explain your reasoning as if you made the gear ratio decision, and do not include any numerical data. "
+        "Focus entirely on the logic behind your selection."
     )
 
     try:
         response = await openaiClient.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant that explains single speed bike gear ratio decisions."},
+                {"role": "system", "content": "You are a helpful assistant that explains single-speed bike gear ratio decisions."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=333,
             temperature=0.2
         )
-        return response.choices[0].message.content
+        explanation = response.choices[0].message.content.strip()
+
+        if not explanation or explanation.endswith(('.', '!', '?')):
+            return explanation
+
+        return explanation + "."
+
     except openai._exceptions.RateLimitError:
         print("Quota limit exceeded or rate limit error")
         return ""
