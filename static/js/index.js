@@ -35,6 +35,35 @@ $(document).ready(function() {
 		$('.speed-unit').html(val.currentTarget.value == 'm' ? '(km/h)' : '(mph)');
 	});
 
+	$(".additional-inputs-menu-header").click(function () {
+        $(".additional-inputs-menu-body").slideToggle();
+		const arrow = $(this).find("#additional-inputs-menu-toggle");
+		arrow.text(arrow.text() === "▼" ? "▲" : "▼");
+    });
+
+	$("#toggle-weight").change(function () {
+		$("#input-weight").prop("disabled", !this.checked);
+		$(this).next("label").toggleClass("greyout", !this.checked);
+	});
+
+	$("#toggle-crank-length").change(function () {
+		$("#input-crank-length").prop("disabled", !this.checked);
+		$(this).next("label").toggleClass("greyout", !this.checked);
+	});
+
+	$("#toggle-ride-style").change(function () {
+		$("#input-ride-style").prop("disabled", !this.checked);
+		$(this).next("label").toggleClass("greyout", !this.checked);
+	});
+
+	$("#toggle-fixed-gear").change(function () {
+		$(this).next("label").toggleClass("greyout", !this.checked);
+	});
+
+	$("#toggle-flat-pedals").change(function () {
+		$(this).next("label").toggleClass("greyout", !this.checked);
+	});
+
 	$("#cadence-dialog").dialog({
         autoOpen: false,
         modal: true,
@@ -336,6 +365,24 @@ $(document).ready(function() {
 //        }
 		formData.append('wheel_circumference', $('#tire').val());
 		formData.append('lang', $('#language-selector').val());
+
+		// Optional inputs
+		if ($('#toggle-weight').is(':checked') && $('#input-weight').val().trim() !== '') {
+			formData.append('weight', $('#input-weight').val().trim());
+		}
+		if ($('#toggle-crank-length').is(':checked') && $('#input-crank-length').val()) {
+			formData.append('crank_length', $('#input-crank-length').val());
+		}
+		// if ($('#toggle-ride-style').is(':checked') && $('#input-ride-style').val()) {
+		// 	formData.append('ride_style', $('#input-ride-style').val());
+		// }
+		if ($('#toggle-fixed-gear').is(':checked')) {
+			formData.append('fixed_gear', true);
+		}
+		if ($('#toggle-flat-pedals').is(':checked')) {
+			formData.append('flat_pedals', true);
+		}
+
 		$.ajax({
             url: '/upload',
             type: 'POST',

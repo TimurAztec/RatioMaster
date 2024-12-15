@@ -159,6 +159,50 @@
                     </table>
                 </div>
             </div>
+            <div class="center-column additional-inputs-menu">
+                <div class="additional-inputs-menu-header"><span data-translate="additional-options">Additional Options</span> <span id="additional-inputs-menu-toggle">▼</span></div>
+                <div class="additional-inputs-menu-body">
+                  <div class="variable-container">
+                    <input type="checkbox" id="toggle-weight">
+                    <label for="toggle-weight" data-translate="input-weight">Body weight + bike weight: </label>
+                      <input type="number" id="input-weight" name="weight" min="30" max="150" value="80" disabled>
+                  </div>
+            
+                  <div class="variable-container">
+                    <input type="checkbox" id="toggle-crank-length">
+                    <label for="toggle-crank-length" data-translate="crank-length">Crank length (mm): </label>
+                      <select id="input-crank-length" name="crank-length" value="170" disabled>
+                        <option value="165">165 mm</option>
+                        <option value="167.5">167.5 mm</option>
+                        <option value="170">170 mm</option>
+                        <option value="172.5">172.5 mm</option>
+                        <option value="175">175 mm</option>
+                    </select>
+                  </div>
+
+                    <!--
+                  <div class="variable-container">
+                    <input type="checkbox" id="toggle-ride-style">
+                    <label for="toggle-ride-style">Preferred ride style: </label>
+                      <select id="input-ride-style" name="ride-style" disabled>
+                    <option value="road">Road</option>
+                    <option value="urban">Urban</option>
+                    <option value="trail">Trail</option>
+                  </select>
+                  </div>
+                  -->
+            
+                  <div class="variable-container">
+                    <input type="checkbox" id="toggle-fixed-gear">
+                    <label for="toggle-fixed-gear" data-translate="fixed-gear">Fixed gear</label>
+                  </div>
+            
+                  <div class="variable-container">
+                    <input type="checkbox" id="toggle-flat-pedals" checked="true">
+                    <label for="toggle-flat-pedals" data-translate="flat-pedals">Flat pedals</label>
+                  </div>
+                </div>
+            </div>
             <div id="upload-container">
                 <h3 style="margin-top: 6px;" data-translate="upload-gpx">Upload GPX/TCX files</h3>
                 <p data-translate="upload-gpx-desc">Upload your GPX or TCX files to find gear ratio that suits your rides!</p>

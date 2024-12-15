@@ -19,6 +19,11 @@ async def upload_gpx_files():
         files = request.files.getlist('files')
         links = request.form.getlist('links')
         wheel_circumference = request.form.get('wheel_circumference', type=int, default=2111)
+        weight = request.form.get('weight', type=int, default=None)
+        crank_length = request.form.get('crank_length', type=int, default=170)
+        ride_style = request.form.get('ride_style', type=str, default=None)
+        fixed_gear = request.form.get('fixed_gear', type=bool, default=None)
+        flat_pedals = request.form.get('flat_pedals', type=bool, default=None)
         lang = request.form.get('lang', type=str, default="en")
 
         return jsonify(await analyze_data(
@@ -26,6 +31,11 @@ async def upload_gpx_files():
                 "files": files,
                 "links": links,
                 "wheel_circumference": wheel_circumference,
+                "weight": weight,
+                "crank_length": crank_length,
+                "ride_style": ride_style,
+                "fixed_gear": fixed_gear,
+                "flat_pedals": flat_pedals,
                 "lang": lang
             })), 200
 

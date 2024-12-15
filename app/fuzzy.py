@@ -60,6 +60,18 @@ def create_speed_fuzzy():
     speed['track'] = fuzz.trimf(speed.universe, [40, 50, 70])
     return speed
 
+def create_fixed_gear_fuzzy():
+    fixed_gear = ctrl.Antecedent(np.array([0, 1]), 'fixed_gear')
+    fixed_gear['no'] = fuzz.trimf(fixed_gear.universe, [0, 0, 1])
+    fixed_gear['yes'] = fuzz.trimf(fixed_gear.universe, [0, 1, 1])
+    return fixed_gear
+
+def create_flat_pedals_fuzzy():
+    flat_pedals = ctrl.Antecedent(np.array([0, 1]), 'flat_pedals')
+    flat_pedals['no'] = fuzz.trimf(flat_pedals.universe, [0, 0, 1])
+    flat_pedals['yes'] = fuzz.trimf(flat_pedals.universe, [0, 1, 1])
+    return flat_pedals
+
 def calculate_optimal_gear_ratio(data):
     speed = create_speed_fuzzy()
     slope = ctrl.Antecedent(np.arange(-35, 35, 0.1), 'slope')
@@ -69,6 +81,8 @@ def calculate_optimal_gear_ratio(data):
     power = create_power_fuzzy()
     gear_ratio = ctrl.Consequent(np.arange(1, 5, 0.05), 'gear_ratio')
     elevation_gain = create_elevation_gain_fuzzy(data)
+    fixed_gear = create_fixed_gear_fuzzy()
+    flat_pedals = create_flat_pedals_fuzzy()
 
     cadence['low'] = fuzz.trimf(cadence.universe, [0, 0, 60])
     cadence['medium'] = fuzz.trimf(cadence.universe, [50, 80, 110])
@@ -160,6 +174,23 @@ def calculate_optimal_gear_ratio(data):
     if data['avg_power'] > 0:
         rules += power_rules
 
+    fixed_gear_rules = [
+        ctrl.Rule(slope['negative'] & fixed_gear['yes'], gear_ratio['track']),
+        ctrl.Rule(surface['perfect'] & elevation_gain['flat'] & fixed_gear['yes'], gear_ratio['track']),
+    ]
+
+    if data['fixed_gear']:
+        rules += fixed_gear_rules
+
+    flat_pedals_rules = [
+        ctrl.Rule(elevation_gain['medium'] & flat_pedals['yes'], gear_ratio['low']),
+        ctrl.Rule(elevation_gain['high'] & flat_pedals['yes'], gear_ratio['low']),
+        ctrl.Rule(elevation_gain['step'] & flat_pedals['yes'], gear_ratio['low'])
+    ]
+
+    if data['flat_pedals']:
+        rules += flat_pedals_rules
+
     gear_ratio_ctrl = ctrl.ControlSystem(rules)
     gear_ratio_simulation = ctrl.ControlSystemSimulation(gear_ratio_ctrl)
 
@@ -175,6 +206,10 @@ def calculate_optimal_gear_ratio(data):
         gear_ratio_simulation.input['heart_rate'] = data['avg_heart_rate']
     if data['avg_power'] > 0:
         gear_ratio_simulation.input['power'] = data['avg_power']
+    if data['fixed_gear']:
+        gear_ratio_simulation.input['fixed_gear'] = int(data['fixed_gear'])
+    if data['flat_pedals']:
+        gear_ratio_simulation.input['flat_pedals'] = int(data['flat_pedals'])
 
     gear_ratio_simulation.compute()
 
@@ -238,6 +273,7 @@ def estimate_speed(data, mode='threshold'):
 
     return speed_simulation.output.get('speed', 70)
 
+
 def estimate_average_power(data):
     speed = create_speed_fuzzy()
     surface = create_surface_fuzzy()
@@ -258,46 +294,60 @@ def estimate_average_power(data):
         ctrl.Rule(speed['low'] & surface['medium'], average_power['low']),
         ctrl.Rule(speed['low'] & surface['good'], average_power['medium']),
         ctrl.Rule(speed['low'] & surface['perfect'], average_power['medium']),
-
         ctrl.Rule(speed['medium'] & surface['bad'], average_power['low']),
         ctrl.Rule(speed['medium'] & surface['medium'], average_power['medium']),
         ctrl.Rule(speed['medium'] & surface['good'], average_power['medium']),
         ctrl.Rule(speed['medium'] & surface['perfect'], average_power['high']),
-
         ctrl.Rule(speed['high'] & surface['bad'], average_power['medium']),
         ctrl.Rule(speed['high'] & surface['medium'], average_power['high']),
         ctrl.Rule(speed['high'] & surface['good'], average_power['high']),
         ctrl.Rule(speed['high'] & surface['perfect'], average_power['high']),
-
         ctrl.Rule(speed['track'] & surface['bad'], average_power['medium']),
         ctrl.Rule(speed['track'] & surface['medium'], average_power['high']),
         ctrl.Rule(speed['track'] & surface['good'], average_power['high']),
         ctrl.Rule(speed['track'] & surface['perfect'], average_power['high']),
-
         ctrl.Rule(speed['low'] & elevation_gain['flat'], average_power['low']),
         ctrl.Rule(speed['low'] & elevation_gain['low'], average_power['low']),
         ctrl.Rule(speed['low'] & elevation_gain['medium'], average_power['medium']),
         ctrl.Rule(speed['low'] & elevation_gain['high'], average_power['medium']),
         ctrl.Rule(speed['low'] & elevation_gain['step'], average_power['medium']),
-
         ctrl.Rule(speed['medium'] & elevation_gain['flat'], average_power['medium']),
         ctrl.Rule(speed['medium'] & elevation_gain['low'], average_power['medium']),
         ctrl.Rule(speed['medium'] & elevation_gain['medium'], average_power['high']),
         ctrl.Rule(speed['medium'] & elevation_gain['high'], average_power['high']),
         ctrl.Rule(speed['medium'] & elevation_gain['step'], average_power['high']),
-
         ctrl.Rule(speed['high'] & elevation_gain['flat'], average_power['high']),
         ctrl.Rule(speed['high'] & elevation_gain['low'], average_power['high']),
         ctrl.Rule(speed['high'] & elevation_gain['medium'], average_power['high']),
         ctrl.Rule(speed['high'] & elevation_gain['high'], average_power['high']),
         ctrl.Rule(speed['high'] & elevation_gain['step'], average_power['high']),
-
         ctrl.Rule(speed['track'] & elevation_gain['flat'], average_power['high']),
         ctrl.Rule(speed['track'] & elevation_gain['low'], average_power['high']),
         ctrl.Rule(speed['track'] & elevation_gain['medium'], average_power['high']),
         ctrl.Rule(speed['track'] & elevation_gain['high'], average_power['high']),
         ctrl.Rule(speed['track'] & elevation_gain['step'], average_power['high']),
     ]
+
+    if data["weight"] is not None:
+        weight = ctrl.Antecedent(np.arange(40, 150, 1), 'weight')
+        weight['low'] = fuzz.trimf(weight.universe, [40, 50, 70])
+        weight['medium'] = fuzz.trimf(weight.universe, [60, 80, 100])
+        weight['high'] = fuzz.trimf(weight.universe, [90, 120, 150])
+
+        rules += [
+            ctrl.Rule(speed['low'] & weight['low'], average_power['low']),
+            ctrl.Rule(speed['low'] & weight['medium'], average_power['low']),
+            ctrl.Rule(speed['low'] & weight['high'], average_power['medium']),
+            ctrl.Rule(speed['medium'] & weight['low'], average_power['medium']),
+            ctrl.Rule(speed['medium'] & weight['medium'], average_power['medium']),
+            ctrl.Rule(speed['medium'] & weight['high'], average_power['high']),
+            ctrl.Rule(speed['high'] & weight['low'], average_power['high']),
+            ctrl.Rule(speed['high'] & weight['medium'], average_power['high']),
+            ctrl.Rule(speed['high'] & weight['high'], average_power['high']),
+            ctrl.Rule(speed['track'] & weight['low'], average_power['high']),
+            ctrl.Rule(speed['track'] & weight['medium'], average_power['high']),
+            ctrl.Rule(speed['track'] & weight['high'], average_power['high']),
+        ]
 
     heart_rate_rules = [
         ctrl.Rule(heart_rate['low'], average_power['low']),
@@ -313,6 +363,9 @@ def estimate_average_power(data):
     power_simulation.input['speed'] = data['avg_speed']
     power_simulation.input['surface'] = data['avg_surface']
     power_simulation.input['elevation_gain'] = data['elevation_gain']
+
+    if data["weight"]  is not None:
+        power_simulation.input['weight'] = data["weight"]
 
     if data['avg_heart_rate'] > 0:
         power_simulation.input['heart_rate'] = data['avg_heart_rate']

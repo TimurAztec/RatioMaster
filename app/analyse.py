@@ -135,13 +135,16 @@ async def analyze_data(input_data):
         if file.filename.endswith('.tcx'):
             data = parse_tcx_data(file)
         if data:
+            data["weight"] = input_data["weight"] if input_data["weight"] else None
+            data["flat_pedals"] = input_data["flat_pedals"] if input_data["flat_pedals"] else None
+            data["fixed_gear"] = input_data["fixed_gear"] if input_data["fixed_gear"] else None
             data["avg_estimated_speed"] = estimate_speed(data, mode='estimate') if not data["avg_speed"] else 0
             data["speed_threshold"] = estimate_speed(data, mode='threshold')
             data["avg_estimated_power"] = estimate_average_power(data) if not data["avg_power"] and data["avg_speed"] else 0
             return {
                 "data": data,
                 "gear_ratio": calculate_gear_ratio_with_adjustments(calculate_optimal_gear_ratio(data),
-                                                                            input_data["wheel_circumference"])
+                                                                            input_data["wheel_circumference"], input_data["crank_length"])
             }
         return None
 
@@ -168,7 +171,7 @@ async def analyze_data(input_data):
         try:
             gpx_data = await fetch_gpx_from_strava(link)
             result = calculate_gear_ratio_with_adjustments(calculate_optimal_gear_ratio(gpx_data),
-                                                                   input_data["wheel_circumference"])
+                                                                   input_data["wheel_circumference"], input_data["crank_length"])
             data.append(result)
         except Exception as e:
             print(f"Error processing link {link}: {e}")

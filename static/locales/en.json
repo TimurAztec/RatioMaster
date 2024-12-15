@@ -46,5 +46,10 @@
     "cadence-info": "Cadence is your RPM. It's how fast you spin those pedals.",
     "gear-ratio-info": "Gear ratio is the ratio between the number of teeth on the chainring and the sprocket. It determines how fast you'll move at a given cadence.",
     "skid-patches-info": "Skid patches are the spots where your tire hits the road when you drift. More patches = less wear. 🛞",
-    "gear-inches-info": "Gear inches tell you how big or small your gear is. It’s the drive wheel diameter multiplied by the gear ratio. 🚴‍♂️"
+    "gear-inches-info": "Gear inches tell you how big or small your gear is. It’s the drive wheel diameter multiplied by the gear ratio. 🚴‍♂️",
+    "additional-options": "Additional options",
+    "input-weight": "Body weight + bike weight: ",
+    "crank-length": "Crank length (mm): ",
+    "fixed-gear": "Fixed gear",
+    "flat-pedals": "Flat pedals"
 }
