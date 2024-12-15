@@ -51,5 +51,8 @@
     "input-weight": "Body weight + bike weight: ",
     "crank-length": "Crank length (mm): ",
     "fixed-gear": "Fixed gear",
-    "flat-pedals": "Flat pedals"
+    "flat-pedals": "Flat pedals",
+    "estimated-power-gradient": "Estimated power to climb gradient",
+    "power-table": "Power (Watts)",
+    "gradient-table": "Gradient %"
 }

@@ -430,6 +430,8 @@ function calculate() {
 	const ratio = Math.round(chainringT/sprocketT*100)/100;
 	const tire = Number($('#tire').val());
 	const tire_inches = tire / (Math.PI * 25.4);
+	const g = 9.81;
+    const rollingResistanceCoefficient = 0.004;
 
 	$('#ratio').html(ratio);
 	$('#gear-inches').html(Math.ceil(ratio * tire_inches));
@@ -452,7 +454,7 @@ function calculate() {
 	const maxCadence = 140;
 
 	$('#speeds-table-body').empty();
-	let rowsHtml = '';
+	let speedsRowsHtml = '';
 	for (let cadence = minCadence; cadence <= maxCadence; cadence += cadenceStep * 2) {
 		const speed1 = (cadence * development / 1000) * 60;
 		const speed2 = ((cadence + cadenceStep) * development / 1000) * 60;
@@ -466,7 +468,7 @@ function calculate() {
 		const highlightClass1 = isInHighlightRange1 ? 'table-highlight' : '';
 		const highlightClass2 = isInHighlightRange2 ? 'table-highlight' : '';
 	
-		rowsHtml += `
+		speedsRowsHtml += `
 			<tr>
 				<td class="${highlightClass1}">${cadence}</td>
 				<td class="${highlightClass1}">${speed1Display}</td>
@@ -475,7 +477,31 @@ function calculate() {
 			</tr>
 		`;
 	}
-	$('#speeds-table-body').append(rowsHtml);
+	$('#speeds-table-body').append(speedsRowsHtml);
+
+	const weight = ($("#toggle-weight").val() && $("#input-weight").val()) ? $("#input-weight").val() : 80;
+
+	$('#powers-table-body').empty();
+	let powersRowsHtml = '';
+	for (let gradient = 5; gradient <= 20; gradient += 10) {
+		const slope = gradient / 100;
+		const rollingResistanceForce = rollingResistanceCoefficient * weight * g;
+		const gravityForce = slope * weight * g;
+		const totalForce = rollingResistanceForce + gravityForce;
+
+		const speed = (minCadence * development) / 60;
+		const power = totalForce * speed;
+
+		powersRowsHtml += `
+			<tr>
+				<td>${gradient}%</td>
+				<td>${power.toFixed(2)} W</td>
+				<td>${(gradient + 5)}%</td>
+				<td>${(totalForce * (speed + 0.5)).toFixed(2)} W</td>
+			</tr>
+		`;
+	}
+	$('#powers-table-body').append(powersRowsHtml);
 
 	populateTable(ratio);
 }
